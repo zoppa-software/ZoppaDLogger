@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36221.1 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ZoppaDLogger", "ZoppaDLogger\ZoppaDLogger.vbproj", "{801A350C-3ED7-477E-A30C-33FD5ABE4D46}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ZoppaDLoggerTest", "ZoppaDLoggerTest\ZoppaDLoggerTest.vbproj", "{542787C2-8FA0-4392-ACAD-6CDAE7236B6C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{801A350C-3ED7-477E-A30C-33FD5ABE4D46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{801A350C-3ED7-477E-A30C-33FD5ABE4D46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{801A350C-3ED7-477E-A30C-33FD5ABE4D46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{801A350C-3ED7-477E-A30C-33FD5ABE4D46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{542787C2-8FA0-4392-ACAD-6CDAE7236B6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{542787C2-8FA0-4392-ACAD-6CDAE7236B6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{542787C2-8FA0-4392-ACAD-6CDAE7236B6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{542787C2-8FA0-4392-ACAD-6CDAE7236B6C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {63EB3237-7FD1-4A71-AB61-32EC46475FC6}
+	EndGlobalSection
+EndGlobal
