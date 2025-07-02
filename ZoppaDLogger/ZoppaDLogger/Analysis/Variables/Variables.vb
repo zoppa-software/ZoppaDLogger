@@ -2,6 +2,7 @@
 Option Explicit On
 
 Imports ZoppaDLogger.Collections
+Imports ZoppaDLogger.Strings
 
 Namespace Analysis
 
@@ -27,7 +28,7 @@ Namespace Analysis
         ''' 既に同じ名前の変数が存在する場合は、値を更新します。
         ''' </summary>
         ''' <param name="name">登録する変数名。</param>
-        Public Sub Regist(name As String, value As IVariable)
+        Public Sub Regist(name As U8String, value As IVariable)
             Dim entry As New Entry(name, value)
             Dim serd As Entry = Me._variables.Search(entry)
             If serd Is Nothing Then
@@ -38,11 +39,24 @@ Namespace Analysis
         End Sub
 
         ''' <summary>
+        ''' 変数を登録します。
+        ''' 既に同じ名前の変数が存在する場合は、値を更新します。
+        ''' </summary>
+        ''' <param name="name">登録する変数名。</param>
+        ''' <param name="value">登録する変数の値。</param>
+        ''' <exception cref="ArgumentNullException">valueがnullの場合にスローされます。</exception>
+        Public Sub Regist(name As String, value As IVariable)
+            Me.Regist(U8String.NewString(name), value)
+        End Sub
+
+        ''' <summary>
         ''' 変数を取得します。
+        ''' 指定した名前の変数が存在しない場合は例外をスローします。
         ''' </summary>
         ''' <param name="name">変数名。</param>
+        ''' <returns>指定した名前の変数。</returns>
         ''' <exception cref="KeyNotFoundException">指定した名前の変数がない。</exception>
-        Public Function [Get](name As String) As IVariable
+        Public Function [Get](name As U8String) As IVariable
             Dim entry As Entry = Me._variables.Search(New Entry(name, Nothing))
             If entry IsNot Nothing Then
                 Return entry.Value
@@ -52,15 +66,35 @@ Namespace Analysis
         End Function
 
         ''' <summary>
+        ''' 変数を取得します。
+        ''' 指定した名前の変数が存在しない場合は例外をスローします。
+        ''' </summary>
+        ''' <param name="name">変数名。</param>
+        ''' <returns>指定した名前の変数。</returns>
+        ''' <exception cref="KeyNotFoundException">指定した名前の変数がない。</exception>
+        Public Function [Get](name As String) As IVariable
+            Return Me.[Get](U8String.NewString(name))
+        End Function
+
+        ''' <summary>
+        ''' 変数を登録解除します。
+        ''' 指定した名前の変数が存在する場合は削除します。
+        ''' </summary>
+        ''' <param name="name">登録解除する変数名。</param>
+        Public Sub Unregist(name As U8String)
+            Dim entry As Entry = Me._variables.Search(New Entry(name, Nothing))
+            If entry IsNot Nothing Then
+                Me._variables.Remove(entry)
+            End If
+        End Sub
+
+        ''' <summary>
         ''' 変数を登録解除します。
         ''' 指定した名前の変数が存在する場合は削除します。
         ''' </summary>
         ''' <param name="name">登録解除する変数名。</param>
         Public Sub Unregist(name As String)
-            Dim entry As Entry = Me._variables.Search(New Entry(name, Nothing))
-            If entry IsNot Nothing Then
-                Me._variables.Remove(entry)
-            End If
+            Me.Unregist(U8String.NewString(name))
         End Sub
 
         ''' <summary>変数エントリ。</summary>
@@ -68,7 +102,7 @@ Namespace Analysis
             Implements IComparable(Of Entry)
 
             ' 変数の名前
-            Public ReadOnly Name As String
+            Public ReadOnly Name As U8String
 
             ' 変数の値
             Public Value As IVariable
@@ -79,7 +113,7 @@ Namespace Analysis
             ''' </summary>
             ''' <param name="name">変数の名前。</param>
             ''' <param name="value">変数の値。</param>
-            Public Sub New(name As String, value As IVariable)
+            Public Sub New(name As U8String, value As IVariable)
                 Me.Name = name
                 Me.Value = value
             End Sub

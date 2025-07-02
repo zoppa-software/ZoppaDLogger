@@ -9,8 +9,8 @@ Namespace Strings
     ''' </summary>
     Public Structure U8Char
 
-        ' 文字を表現するバイト値
-        Private ReadOnly _raw0, _raw1, _raw2, _raw3 As Byte
+        ''' <summary>文字を表現するバイト値。</summary>
+        Public ReadOnly Raw0, Raw1, Raw2, Raw3 As Byte
 
         ''' <summary>
         ''' 文字を表すバイト数を取得します。
@@ -18,7 +18,7 @@ Namespace Strings
         ''' <returns>文字を表すバイト数の配列。</returns>
         Public ReadOnly Property Size As Integer
             Get
-                Return Utf8ByteSequenceLength(Me._raw0, 1)
+                Return Utf8ByteSequenceLength(Me.Raw0, 1)
             End Get
         End Property
 
@@ -29,14 +29,14 @@ Namespace Strings
         Public ReadOnly Property IntegerValue As UInteger
             Get
                 ' UTF-8の値を取得
-                If Me._raw1 = 0 Then
-                    Return Me._raw0
-                ElseIf Me._raw2 = 0 Then
-                    Return Me._raw0 << 8 + Me._raw1
-                ElseIf Me._raw3 = 0 Then
-                    Return Me._raw0 << 16 + Me._raw1 << 8 + Me._raw2
+                If Me.Raw1 = 0 Then
+                    Return Me.Raw0
+                ElseIf Me.Raw2 = 0 Then
+                    Return Me.Raw0 << 8 + Me.Raw1
+                ElseIf Me.Raw3 = 0 Then
+                    Return Me.Raw0 << 16 + Me.Raw1 << 8 + Me.Raw2
                 Else
-                    Return Me._raw0 << 24 + Me._raw1 << 16 + Me._raw2 << 8 + Me._raw3
+                    Return Me.Raw0 << 24 + Me.Raw1 << 16 + Me.Raw2 << 8 + Me.Raw3
                 End If
             End Get
         End Property
@@ -51,10 +51,10 @@ Namespace Strings
         ''' </remarks>
         Public ReadOnly Property IsWhiteSpace As Boolean
             Get
-                If Me._raw1 = 0 Then
+                If Me.Raw1 = 0 Then
                     ' 1バイト文字の場合、スペースやタブ、改行ならば真
-                    Return Me._raw0 = &H20 OrElse Me._raw0 = &H9 OrElse Me._raw0 = &HA OrElse Me._raw0 = &HD
-                ElseIf (Me._raw0 = &HE2 AndAlso Me._raw1 = &H80 AndAlso Me._raw2 = &H80) OrElse (Me._raw0 = &HE3 AndAlso Me._raw1 = &H80 AndAlso Me._raw2 = &H80) Then
+                    Return Me.Raw0 = &H20 OrElse Me.Raw0 = &H9 OrElse Me.Raw0 = &HA OrElse Me.Raw0 = &HD
+                ElseIf (Me.Raw0 = &HE2 AndAlso Me.Raw1 = &H80 AndAlso Me.Raw2 = &H80) OrElse (Me.Raw0 = &HE3 AndAlso Me.Raw1 = &H80 AndAlso Me.Raw2 = &H80) Then
                     ' ' U+3000（全角スペース）やU+2000（スペース）
                     Return True
                 Else
@@ -72,10 +72,10 @@ Namespace Strings
         ''' <param name="raw2">3番目のバイト（オプション）。</param>
         ''' <param name="raw3">4番目のバイト（オプション）。</param>
         Private Sub New(raw0 As Byte, Optional raw1 As Byte = 0, Optional raw2 As Byte = 0, Optional raw3 As Byte = 0)
-            Me._raw0 = raw0
-            Me._raw1 = raw1
-            Me._raw2 = raw2
-            Me._raw3 = raw3
+            Me.Raw0 = raw0
+            Me.Raw1 = raw1
+            Me.Raw2 = raw2
+            Me.Raw3 = raw3
         End Sub
 
         ''' <summary>
@@ -160,10 +160,10 @@ Namespace Strings
         Public Overrides Function Equals(obj As Object) As Boolean
             If TypeOf obj Is U8Char Then
                 Dim other As U8Char = CType(obj, U8Char)
-                Return Me._raw0 = other._raw0 AndAlso
-                       Me._raw1 = other._raw1 AndAlso
-                       Me._raw2 = other._raw2 AndAlso
-                       Me._raw3 = other._raw3
+                Return Me.Raw0 = other.Raw0 AndAlso
+                       Me.Raw1 = other.Raw1 AndAlso
+                       Me.Raw2 = other.Raw2 AndAlso
+                       Me.Raw3 = other.Raw3
             Else
                 Return False
             End If
@@ -175,10 +175,10 @@ Namespace Strings
         ''' </summary>
         ''' <returns>等しければ真。</returns>
         Public Overloads Shared Operator =(ByVal c1 As U8Char, ByVal c2 As U8Char) As Boolean
-            Return c1._raw0 = c2._raw0 AndAlso
-                   c1._raw1 = c2._raw1 AndAlso
-                   c1._raw2 = c2._raw2 AndAlso
-                   c1._raw3 = c2._raw3
+            Return c1.Raw0 = c2.Raw0 AndAlso
+                   c1.Raw1 = c2.Raw1 AndAlso
+                   c1.Raw2 = c2.Raw2 AndAlso
+                   c1.Raw3 = c2.Raw3
         End Operator
 
         ''' <summary>
@@ -187,10 +187,10 @@ Namespace Strings
         ''' </summary>
         ''' <returns>等しくなければ真。</returns>
         Public Overloads Shared Operator <>(ByVal c1 As U8Char, ByVal c2 As U8Char) As Boolean
-            Return c1._raw0 <> c2._raw0 OrElse
-                   c1._raw1 <> c2._raw1 OrElse
-                   c1._raw2 <> c2._raw2 OrElse
-                   c1._raw3 <> c2._raw3
+            Return c1.Raw0 <> c2.Raw0 OrElse
+                   c1.Raw1 <> c2.Raw1 OrElse
+                   c1.Raw2 <> c2.Raw2 OrElse
+                   c1.Raw3 <> c2.Raw3
         End Operator
 
         ''' <summary>
@@ -199,7 +199,7 @@ Namespace Strings
         ''' </summary>
         ''' <returns>文字列。</returns>
         Public Overrides Function ToString() As String
-            Dim bytes() As Byte = {Me._raw0, Me._raw1, Me._raw2, Me._raw3}
+            Dim bytes() As Byte = {Me.Raw0, Me.Raw1, Me.Raw2, Me.Raw3}
             Return System.Text.Encoding.UTF8.GetString(bytes, 0, Me.Size)
         End Function
 

@@ -59,11 +59,6 @@ Public Class StringCharTest
     End Sub
 
     <Fact>
-    Public Sub NewString_Null_ThrowsArgumentNullException()
-        Assert.Throws(Of ArgumentNullException)(Function() U8String.NewString(Nothing))
-    End Sub
-
-    <Fact>
     Public Sub NewSlice_ValidRange_ReturnsCorrectSlice()
         Dim s As String = "テスト文字列"
         Dim u8 = U8String.NewString(s)

@@ -15,6 +15,12 @@ Namespace Analysis
         ' 解析した文字列
         Private ReadOnly _input As U8String
 
+        ' 解析結果の式
+        Private ReadOnly _expression As IExpression
+
+        ' 解析結果
+
+
         ''' <summary>比較を行います。</summary>
         ''' <param name="other">比較対象。</param>
         ''' <returns>比較結果。</returns>

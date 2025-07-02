@@ -23,6 +23,22 @@ Namespace Strings
         Private ReadOnly Property Length As Integer
 
         ''' <summary>
+        ''' 参照範囲のバイト配列を取得します。
+        ''' 参照範囲内のバイトデータを返します。
+        ''' </summary>
+        ''' <returns>参照範囲のバイト配列。</returns>
+        Friend ReadOnly Property Data As Byte()
+            Get
+                If Me.raw Is Nothing Then
+                    Return Nothing
+                End If
+                Dim res() As Byte = New Byte(Me._end - Me._start - 1) {}
+                Array.Copy(Me.raw, Me._start, res, 0, Me._end - Me._start)
+                Return res
+            End Get
+        End Property
+
+        ''' <summary>
         ''' 空の文字列を取得します。
         ''' 参照範囲が空のU8Stringを返します。
         ''' </summary>
@@ -60,6 +76,17 @@ Namespace Strings
                 Throw New ArgumentNullException("source", "文字列はnullにできません")
             End If
             Dim bytes() As Byte = System.Text.Encoding.UTF8.GetBytes(source)
+            Return New U8String(0, bytes.Length, bytes)
+        End Function
+
+        ''' <summary>
+        ''' 文字列（UTF-8）を文字列から取得します。
+        ''' </summary>
+        ''' <returns>文字列。</returns>
+        Public Shared Function NewString(bytes As Byte()) As U8String
+            If bytes Is Nothing Then
+                Throw New ArgumentNullException("source", "バイト配列はnullにできません")
+            End If
             Return New U8String(0, bytes.Length, bytes)
         End Function
 
@@ -391,6 +418,15 @@ Namespace Strings
             Public ReadOnly Property HasNext As Boolean
                 Get
                     Return Me._start + Me._current < Me._end
+                End Get
+            End Property
+
+            ''' <summary>現在のインデックスを取得します。</summary>
+            ''' <returns>現在のインデックス。</returns>
+            ''' <remarks>イテレーターの状態を更新しません。</remarks>
+            Public ReadOnly Property CurrentIndex() As Integer
+                Get
+                    Return Me._current
                 End Get
             End Property
 
