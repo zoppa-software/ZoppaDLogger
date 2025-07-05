@@ -15,6 +15,39 @@ Namespace Analysis
     ''' </remarks>
     Public Module LexicalEmbeddedModule
 
+        ''' <summary>Ifリテラル。</summary>
+        Private ReadOnly IfLiteral As U8String = U8String.NewString("{if")
+
+        ''' <summary>ElseIfリテラル。</summary>
+        Private ReadOnly ElseIfLiteral As U8String = U8String.NewString("{else if")
+
+        ''' <summary>Elseリテラル。</summary>
+        Private ReadOnly ElseLiteral As U8String = U8String.NewString("{else}")
+
+        ''' <summary>EndIfリテラル。</summary>
+        Private ReadOnly EndIfLiteral As U8String = U8String.NewString("{/if}")
+
+        ''' <summary>Forリテラル。</summary>
+        Private ReadOnly ForLiteral As U8String = U8String.NewString("{for")
+
+        ''' <summary>EndForリテラル。</summary>
+        Private ReadOnly EndForLiteral As U8String = U8String.NewString("{/for}")
+
+        ''' <summary>Selectリテラル。</summary>
+        Private ReadOnly SelectLiteral As U8String = U8String.NewString("{select")
+
+        ''' <summary>SelectCaseリテラル。</summary>
+        Private ReadOnly SelectCaseLiteral As U8String = U8String.NewString("{case")
+
+        ''' <summary>SelectDefaultリテラル。</summary>
+        Private ReadOnly SelectDefaultLiteral As U8String = U8String.NewString("{default}")
+
+        ''' <summary>EndSelectリテラル。</summary>
+        Private ReadOnly EndSelectLiteral As U8String = U8String.NewString("{/select}")
+
+        ''' <summary>Emptyリテラル。</summary>
+        Private ReadOnly EmptyLiteral As U8String = U8String.NewString("{}")
+
         ''' <summary>
         ''' 埋込ブロックを文字列から分割します。
         ''' このメソッドは、入力文字列を解析して埋込ブロックのリストを生成します。
@@ -174,57 +207,57 @@ Namespace Analysis
         ''' </remarks>
         Private Function GetStatementBlock(input As U8String, iter As U8String.U8StringIterator) As EmbeddedBlock
             Dim cmd = GetEmbeddedBlock(input, iter, True)
-            If cmd.StartWith("{if") AndAlso If(cmd.At(3)?.IsWhiteSpace, True) Then
+            If cmd.StartWith(IfLiteral) AndAlso If(cmd.At(3)?.IsWhiteSpace, True) Then
                 Return New EmbeddedBlock() With {
                     .str = cmd.Mid(4, cmd.Length - 5),
                     .kind = EmbeddedType.IfBlock
                 }
-            ElseIf cmd.StartWith("{else if") AndAlso If(cmd.At(8)?.IsWhiteSpace, True) Then
+            ElseIf cmd.StartWith(ElseIfLiteral) AndAlso If(cmd.At(8)?.IsWhiteSpace, True) Then
                 Return New EmbeddedBlock() With {
                     .str = cmd.Mid(9, cmd.Length - 10),
                     .kind = EmbeddedType.ElseIfBlock
                 }
-            ElseIf cmd.Equals("{else}") Then
+            ElseIf cmd = ElseLiteral Then
                 Return New EmbeddedBlock() With {
                     .str = cmd,
                     .kind = EmbeddedType.ElseBlock
                 }
-            ElseIf cmd.Equals("{/if}") Then
+            ElseIf cmd = EndIfLiteral Then
                 Return New EmbeddedBlock() With {
                     .str = cmd,
                     .kind = EmbeddedType.EndIfBlock
                 }
-            ElseIf cmd.startWith("{for") AndAlso If(cmd.At(4)?.IsWhiteSpace, True) Then
+            ElseIf cmd.StartWith(ForLiteral) AndAlso If(cmd.At(4)?.IsWhiteSpace, True) Then
                 Return New EmbeddedBlock() With {
                     .str = cmd.Mid(5, cmd.Length - 6),
                     .kind = EmbeddedType.ForBlock
                 }
-            ElseIf cmd.Equals("{/for}") Then
+            ElseIf cmd = EndForLiteral Then
                 Return New EmbeddedBlock() With {
                     .str = cmd,
                     .kind = EmbeddedType.EndForBlock
                 }
-            ElseIf cmd.StartWith("{select") AndAlso If(cmd.At(7)?.IsWhiteSpace, True) Then
+            ElseIf cmd.StartWith(SelectLiteral) AndAlso If(cmd.At(7)?.IsWhiteSpace, True) Then
                 Return New EmbeddedBlock() With {
                     .str = cmd.Mid(8, cmd.Length - 9),
                     .kind = EmbeddedType.SelectBlock
                 }
-            ElseIf cmd.StartWith("{case") AndAlso If(cmd.At(5)?.IsWhiteSpace, True) Then
+            ElseIf cmd.StartWith(SelectCaseLiteral) AndAlso If(cmd.At(5)?.IsWhiteSpace, True) Then
                 Return New EmbeddedBlock() With {
                     .str = cmd.Mid(6, cmd.Length - 7),
                     .kind = EmbeddedType.SelectCaseBlock
                 }
-            ElseIf cmd.Equals("{default}") Then
+            ElseIf cmd = SelectDefaultLiteral Then
                 Return New EmbeddedBlock() With {
                     .str = cmd,
                     .kind = EmbeddedType.SelectDefaultBlock
                 }
-            ElseIf cmd.Equals("{/select}") Then
+            ElseIf cmd = EndSelectLiteral Then
                 Return New EmbeddedBlock() With {
                     .str = cmd,
                     .kind = EmbeddedType.EndSelectBlock
                 }
-            ElseIf cmd.Equals("{}") Then
+            ElseIf cmd = EmptyLiteral Then
                 Return New EmbeddedBlock() With {
                     .str = cmd,
                     .kind = EmbeddedType.EmptyBlock

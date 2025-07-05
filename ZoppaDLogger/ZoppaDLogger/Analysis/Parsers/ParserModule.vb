@@ -51,11 +51,11 @@ Namespace Analysis
         ''' このメソッドは、埋め込みテキストを解析し、結果を返します。
         ''' </remarks>
         Public Function Translate(input As U8String) As AnalysisResults
-            ' 入力文字列を単語に分割します
-            Dim words = input.SplitWords()
+            ' 入力文字列を埋込ブロックに分割します
+            Dim blocks = input.SplitEmbeddedText()
 
             ' 単語のイテレーターを作成します
-            Dim iter As New ParserIterator(Of LexicalModule.Word)(words)
+            Dim iter As New ParserIterator(Of LexicalEmbeddedModule.EmbeddedBlock)(blocks)
 
             ' 式を解析します
             Dim exper = ParseEmbeddedText(iter)

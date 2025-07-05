@@ -1,6 +1,5 @@
 ﻿Option Strict On
 Option Explicit On
-
 Imports ZoppaDLogger.Strings
 
 Namespace Analysis
@@ -40,7 +39,16 @@ Namespace Analysis
         ''' このメソッドは、リスト内の各式を評価し、その結果を返します。
         ''' </remarks>
         Public Function GetValue(venv As AnalysisEnvironment) As IValue Implements IExpression.GetValue
-            Throw New NotImplementedException()
+            Dim result As New List(Of Byte)()
+            For Each expr In _expressions
+                Dim s = expr.GetValue(venv).Str
+                If s.Length > 0 Then
+                    result.AddRange(s.Data)
+                End If
+            Next
+
+            ' 文字列に変換して返す
+            Return New StringValue(U8String.NewString(result.ToArray()))
         End Function
 
     End Structure
