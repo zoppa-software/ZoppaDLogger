@@ -55,6 +55,37 @@ Namespace Analysis
             Return New ArrayValue(values)
         End Function
 
+        ''' <summary>オブジェクトの配列をIValueに変換します。</summary>
+        ''' <param name="values">変換するオブジェクトの配列。</param>
+        ''' <returns>IValue型のArrayValue。</returns>
+        Public Function ToArrayValue(Of T)(values As T()) As IValue
+            Dim items = New IValue(values.Length - 1) {}
+            For i As Integer = 0 To values.Length - 1
+                items(i) = ObjToValue(values(i))
+            Next
+            Return New ArrayValue(items)
+        End Function
+
+        ''' <summary>オブジェクトをIValueに変換します。</summary>
+        ''' <param name="v">変換するオブジェクト。</param>
+        ''' <returns>IValue型のObjectValue。</returns>
+        Private Function ObjToValue(v As Object) As IValue
+            Select Case v.GetType()
+                Case GetType(Double)
+                    Return New NumberValue(CDbl(v))
+                Case GetType(Integer)
+                    Return New NumberValue(CInt(v))
+                Case GetType(String)
+                    Return New StringValue(U8String.NewString(CStr(v)))
+                Case GetType(U8String)
+                    Return New StringValue(DirectCast(v, U8String))
+                Case GetType(Boolean)
+                    Return New BooleanValue(CBool(v))
+                Case Else
+                    Return New ObjectValue(v)
+            End Select
+        End Function
+
         ''' <summary>オブジェクトをIValueに変換します。</summary>
         ''' <param name="value">変換するオブジェクト。</param>
         ''' <returns>IValue型のObjectValue。</returns>
@@ -90,26 +121,159 @@ Namespace Analysis
                         Dim arr = CType(obj, Array)
                         Dim items = New IValue(arr.Length - 1) {}
                         For i As Integer = 0 To arr.Length - 1
-                            Dim v = arr.GetValue(i)
-                            Select Case v.GetType()
-                                Case GetType(Double)
-                                    items(i) = New NumberValue(CDbl(v))
-                                Case GetType(Integer)
-                                    items(i) = New NumberValue(CInt(v))
-                                Case GetType(String)
-                                    items(i) = New StringValue(U8String.NewString(CStr(v)))
-                                Case GetType(U8String)
-                                    items(i) = New StringValue(DirectCast(v, U8String))
-                                Case GetType(Boolean)
-                                    items(i) = New BooleanValue(CBool(v))
-                                Case Else
-                                    items(i) = New ObjectValue(v)
-                            End Select
+                            items(i) = ObjToValue(arr.GetValue(i))
                         Next
                         Return New ArrayValue(items)
                     Else
                         Return New ObjectValue(obj)
                     End If
+            End Select
+        End Function
+
+        ''' <summary>
+        ''' IValueを数値に変換します。
+        ''' IValueの型に応じて、適切な数値を返します。
+        ''' </summary>
+        ''' <param name="val">変換するIValue。</param>
+        ''' <returns>数値。</returns>
+        ''' <exception cref="InvalidOperationException">数値に変換できない場合にスローされます。</exception>
+        <Extension()>
+        Public Function Number(val As IValue) As Double
+            Select Case val.Type
+                Case ValueType.Number
+                    Return DirectCast(val, NumberValue).Value
+                Case ValueType.Bool
+                    Return If(DirectCast(val, BooleanValue).Value, 1, 0)
+                Case ValueType.Str
+                    Dim o = DirectCast(val, StringValue).Value
+                    Return ParserModule.ParseNumber(o)
+                Case ValueType.Obj
+                    Dim o = DirectCast(val, ObjectValue).Value
+                    If TypeOf o Is Double Then
+                        Return CDbl(o)
+                    ElseIf TypeOf o Is Integer Then
+                        Return CDbl(CInt(o))
+                    Else
+                        Throw New InvalidOperationException("オブジェクト値は数値になりません。")
+                    End If
+                Case Else
+                    Throw New InvalidOperationException("数値に変換することができません")
+            End Select
+        End Function
+
+        ''' <summary>
+        ''' IValueを文字列に変換します。
+        ''' IValueの型に応じて、適切な文字列を返します。
+        ''' </summary>
+        ''' <param name="val">変換するIValue。</param>
+        ''' <returns>文字列。</returns>
+        ''' <exception cref="InvalidOperationException">文字列に変換できない場合にスローされます。</exception>
+        <Extension()>
+        Public Function Str(val As IValue) As U8String
+            Select Case val.Type
+                Case ValueType.Str
+                    Return DirectCast(val, StringValue).Value
+                Case ValueType.Number
+                    Return U8String.NewString(DirectCast(val, NumberValue).Value.ToString())
+                Case ValueType.Bool
+                    Return If(DirectCast(val, BooleanValue).Value, LexicalModule.TrueKeyword, LexicalModule.FalseKeyword)
+                Case ValueType.Obj
+                    Dim o = DirectCast(val, ObjectValue).Value
+                    If TypeOf o Is U8String Then
+                        Return CType(o, U8String)
+                    ElseIf TypeOf o Is String Then
+                        Return U8String.NewString(CType(o, String))
+                    Else
+                        Return U8String.NewString(o.ToString())
+                    End If
+                Case ValueType.Array
+                    Dim o = DirectCast(val, ArrayValue).Value
+                    Dim res As New List(Of Byte)()
+                    For i As Integer = 0 To o.Length - 1
+                        If i > 0 Then
+                            res.Add(CByte(44)) ' カンマのASCIIコード
+                        End If
+                        res.AddRange(o(i).Str.Data)
+                    Next
+                    Return U8String.NewString(res.ToArray())
+                Case Else
+                    Throw New InvalidOperationException("文字列に変換することができません")
+            End Select
+        End Function
+
+        ''' <summary>
+        ''' IValueを真偽値に変換します。
+        ''' IValueの型に応じて、適切な真偽値を返します。
+        ''' </summary>
+        ''' <param name="val">変換するIValue。</param>
+        ''' <returns>真偽値。</returns>
+        ''' <exception cref="InvalidOperationException">真偽値に変換できない場合にスローされます。</exception>
+        <Extension()>
+        Public Function Bool(val As IValue) As Boolean
+            Select Case val.Type
+                Case ValueType.Bool
+                    Return DirectCast(val, BooleanValue).Value
+                Case ValueType.Str
+                    Dim o = DirectCast(val, StringValue).Value
+                    If o = TrueKeyword Then
+                        Return True
+                    ElseIf o = FalseKeyword Then
+                        Return False
+                    Else
+                        ' 文字列が真偽値として解釈できない場合は例外を投げる
+                        Throw New InvalidOperationException("文字列を真偽値として解釈できません。")
+                    End If
+                Case ValueType.Number
+                    Return DirectCast(val, NumberValue).Value <> 0
+                Case ValueType.Obj
+                    Dim o = DirectCast(val, ObjectValue).Value
+                    If TypeOf o Is Boolean Then
+                        Return CType(o, Boolean)
+                    Else
+                        Throw New InvalidOperationException("オブジェクト値を真偽値として解釈できません。")
+                    End If
+                Case Else
+                    Throw New InvalidOperationException("真偽値に変換することができません")
+            End Select
+        End Function
+
+        ''' <summary>
+        ''' IValueを配列値に変換します。
+        ''' IValueの型に応じて、適切な配列値を返します。
+        ''' </summary>
+        ''' <param name="val">変換するIValue。</param>
+        ''' <returns>配列値。</returns>
+        <Extension()>
+        Public Function Array(val As IValue) As IValue()
+            Select Case val.Type
+                Case ValueType.Array
+                    Return DirectCast(val, ArrayValue).Value
+                Case Else
+                    Return New IValue() {val}
+            End Select
+        End Function
+
+        ''' <summary>
+        ''' IValueをオブジェクト値に変換します。
+        ''' IValueの型に応じて、適切なオブジェクト値を返します。
+        ''' </summary>
+        ''' <param name="val">変換するIValue。</param>
+        ''' <returns>配列オブジェクト値。</returns>
+        <Extension()>
+        Public Function Obj(val As IValue) As Object
+            Select Case val.Type
+                Case ValueType.Array
+                    Return DirectCast(val, ArrayValue).Value
+                Case ValueType.Bool
+                    Return DirectCast(val, BooleanValue).Value
+                Case ValueType.Number
+                    Return DirectCast(val, NumberValue).Value
+                Case ValueType.Str
+                    Return DirectCast(val, StringValue).Value
+                Case ValueType.Obj
+                    Return DirectCast(val, ObjectValue).Value
+                Case Else
+                    Throw New InvalidOperationException("オブジェクト値に変換することができません")
             End Select
         End Function
 

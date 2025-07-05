@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Analysis\Values\ArrayValue.vb" />
+    <Compile Remove="Analysis\Values\BooleanValue.vb" />
+    <Compile Remove="Analysis\Values\NumberValue.vb" />
+    <Compile Remove="Analysis\Values\ObjectValue.vb" />
+    <Compile Remove="Analysis\Values\StringValue.vb" />
     <Compile Remove="Analysis\Values\Value.vb" />
   </ItemGroup>
 
