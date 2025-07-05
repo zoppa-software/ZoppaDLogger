@@ -17,10 +17,21 @@ Namespace Analysis
     Public NotInheritable Class ParserIterator(Of T)
 
         ' 要素、ブロックのリストを保持する
-        Private ReadOnly _items As List(Of T)
+        Private ReadOnly _items As T()
 
         ' 現在のインデックスを保持する
         Private _currentIndex As Integer
+
+        ' 要素数
+        Private ReadOnly _itemCount As Integer
+
+        ''' <summary>現在のインデックスを取得します。</summary>
+        ''' <returns>現在のインデックス。</returns>
+        Public ReadOnly Property CurrentIndex() As Integer
+            Get
+                Return _currentIndex
+            End Get
+        End Property
 
         ''' <summary>現在の要素を取得します。</summary>
         ''' <returns>現在の要素。</returns>
@@ -30,7 +41,7 @@ Namespace Analysis
         ''' </remarks>
         Public ReadOnly Property Current As T
             Get
-                If _currentIndex < _items.Count Then
+                If _currentIndex < _itemCount Then
                     Return _items(_currentIndex)
                 Else
                     Return Nothing
@@ -39,10 +50,24 @@ Namespace Analysis
         End Property
 
         ''' <summary>コンストラクタ。</summary>
-        ''' <param name="words"></param>
-        Public Sub New(items As IEnumerable(Of T))
-            Me._items = New List(Of T)(items)
+        ''' <param name="items">イテレーションする要素の配列。</param>
+        Public Sub New(items As T())
+            Me._items = items
             Me._currentIndex = 0
+            Me._itemCount = items.Length
+        End Sub
+
+        ''' <summary>コンストラクタ。</summary>
+        ''' <param name="items">イテレーションする要素の配列。</param>
+        ''' <param name="start">開始インデックス。</param>
+        ''' <param name="[end]">終了インデックス。</param>
+        ''' <remarks>
+        ''' 指定された範囲内の要素をイテレートします。
+        ''' </remarks>
+        Private Sub New(items As T(), start As Integer, [end] As Integer)
+            Me._items = items
+            Me._currentIndex = start
+            Me._itemCount = [end]
         End Sub
 
         ''' <summary>
@@ -53,7 +78,7 @@ Namespace Analysis
         ''' 現在のインデックスがリストの範囲内であるかをチェックします。
         ''' </remarks>
         Public Function HasNext() As Boolean
-            Return _currentIndex < _items.Count
+            Return _currentIndex < _itemCount
         End Function
 
         ''' <summary>次の要素を取得します。</summary>
@@ -63,13 +88,26 @@ Namespace Analysis
         ''' インデックスが範囲外の場合は、Nothingを返します。
         ''' </remarks>
         Public Function [Next]() As T
-            If _currentIndex < _items.Count Then
+            If _currentIndex < _itemCount Then
                 Dim res = _items(_currentIndex)
                 _currentIndex += 1
                 Return res
             Else
                 Return Nothing
             End If
+        End Function
+
+        ''' <summary>
+        ''' 指定された範囲のイテレーターを取得します。
+        ''' </summary>
+        ''' <param name="start">開始インデックス。</param>
+        ''' <param name="[end]">終了インデックス。</param>
+        ''' <returns>指定された範囲のイテレーター。</returns>
+        ''' <remarks>
+        ''' 指定された範囲内の要素をイテレートする新しいイテレーターを返します。
+        ''' </remarks>
+        Public Function GetRangeIterator(start As Integer, [end] As Integer) As ParserIterator(Of T)
+            Return New ParserIterator(Of T)(_items, start, [end])
         End Function
 
     End Class

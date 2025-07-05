@@ -20,7 +20,7 @@ Namespace Strings
 
         ''' <summary>文字列の文字数を取得します。</summary>
         ''' <returns>文字列の長さ。</returns>
-        Private ReadOnly Property Length As Integer
+        Public ReadOnly Property Length As Integer
 
         ''' <summary>
         ''' 参照範囲のバイト配列を取得します。

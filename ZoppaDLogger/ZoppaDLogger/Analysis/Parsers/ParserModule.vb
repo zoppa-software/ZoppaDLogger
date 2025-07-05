@@ -1,6 +1,7 @@
 ﻿Option Strict On
 Option Explicit On
 
+Imports System.Transactions
 Imports ZoppaDLogger.Analysis.LexicalModule
 Imports ZoppaDLogger.Strings
 
@@ -35,10 +36,12 @@ Namespace Analysis
             ' 単語のイテレーターを作成します
             Dim iter As New ParserIterator(Of LexicalModule.Word)(words)
 
+            ' 式を解析します
+            Dim exper = ParseFactor(iter)
             If iter.HasNext() Then
                 Throw New AnalysisException("式の解析に失敗しました。")
             End If
-
+            Return New AnalysisResults(input, exper)
         End Function
 
     End Module

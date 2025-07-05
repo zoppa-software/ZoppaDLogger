@@ -4,13 +4,10 @@ Option Explicit On
 Namespace Analysis
 
     ''' <summary>
-    ''' 変数の型を定義する列挙型です。
-    ''' 変数は数値、文字列、または真偽値のいずれかを表すことができます。
+    ''' 値の型を定義する列挙型です。
+    ''' 値は数値、文字列、真偽値、または配列のいずれかを表すことができます。
     ''' </summary>
-    Public Enum VariableType
-
-        ''' <summary>式。</summary>
-        Expr
+    Public Enum ValueType
 
         ''' <summary>数値。</summary>
         Number

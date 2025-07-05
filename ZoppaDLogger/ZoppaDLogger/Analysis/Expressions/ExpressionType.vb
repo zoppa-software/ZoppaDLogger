@@ -60,11 +60,11 @@ Namespace Analysis
         ''' <summary>真偽値式。</summary>
         BooleanExpress
 
-        ''' <summary>配列変数式リスト。</summary>
-        ArrayVariableExpress
+        ''' <summary>配列フィールド式。</summary>
+        ArrayFieldExpress
 
-        ''' <summary>配列式。</summary>
-        ArrayExpress
+        ''' <summary>配列アクセス式。</summary>
+        ArrayAccessExpress
 
         ''' <summary>識別子式。</summary>
         IdentifierExpress
@@ -88,7 +88,13 @@ Namespace Analysis
         FunctionArgsExpress
 
         ''' <summary>関数式。</summary>
-        FunctionExpress
+        FunctionCallExpress
+
+        ''' <summary>オブジェクト式。</summary>
+        ObjectExpress
+
+        ''' <summary>オブジェクトフィールドアクセス式。</summary>
+        FieldAccessExpress
 
     End Enum
 

@@ -6,7 +6,7 @@ Public Class VariableEnvironmentTests
 
     <Fact>
     Public Sub RegistNumber_And_Get_ReturnsCorrectValue()
-        Dim env As New VariableEnvironment()
+        Dim env As New AnalysisEnvironment()
         env.RegistNumber("num", 42.0)
         Dim v = env.Get("num")
         Assert.Equal(VariableType.Number, v.Type)
@@ -15,16 +15,16 @@ Public Class VariableEnvironmentTests
 
     <Fact>
     Public Sub RegistStr_And_Get_ReturnsCorrectValue()
-        Dim env As New VariableEnvironment()
+        Dim env As New AnalysisEnvironment()
         env.RegistStr("str", "hello")
         Dim v = env.Get("str")
         Assert.Equal(VariableType.Str, v.Type)
-        Assert.Equal(U8String.NewString("hello"), v.Str)
+        Assert.Equal(U8String.NewString("hello"), v.Str(env))
     End Sub
 
     <Fact>
     Public Sub RegistBool_And_Get_ReturnsCorrectValue()
-        Dim env As New VariableEnvironment()
+        Dim env As New AnalysisEnvironment()
         env.RegistBool("flag", True)
         Dim v = env.Get("flag")
         Assert.Equal(VariableType.Bool, v.Type)
@@ -33,7 +33,7 @@ Public Class VariableEnvironmentTests
 
     <Fact>
     Public Sub Unregist_RemovesVariable()
-        Dim env As New VariableEnvironment()
+        Dim env As New AnalysisEnvironment()
         env.RegistNumber("x", 1)
         env.Unregist("x")
         Assert.Throws(Of KeyNotFoundException)(Sub() env.Get("x"))
@@ -41,7 +41,7 @@ Public Class VariableEnvironmentTests
 
     <Fact>
     Public Sub Hierarchy_ScopeTest()
-        Dim env As New VariableEnvironment()
+        Dim env As New AnalysisEnvironment()
         env.RegistNumber("x", 1)
         env.AddHierarchy()
         env.RegistNumber("x", 2)
@@ -52,7 +52,7 @@ Public Class VariableEnvironmentTests
 
     <Fact>
     Public Sub Get_ThrowsIfNotFound()
-        Dim env As New VariableEnvironment()
+        Dim env As New AnalysisEnvironment()
         Assert.Throws(Of KeyNotFoundException)(Sub() env.Get("notfound"))
     End Sub
 

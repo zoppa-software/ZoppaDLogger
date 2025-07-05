@@ -9,7 +9,7 @@ Public Class LexicalTest
     <Fact>
     Public Sub LexicalTest_Example()
         Dim ans = LexicalModule.SplitWords(U8String.NewString("true false and or xor in other"))
-        Assert.Equal(7, ans.Count)
+        Assert.Equal(7, ans.Length)
         Assert.Equal(WordType.TrueLiteral, ans(0).kind)
         Assert.Equal(WordType.FalseLiteral, ans(1).kind)
         Assert.Equal(WordType.AndOperator, ans(2).kind)
@@ -22,7 +22,7 @@ Public Class LexicalTest
     <Fact>
     Public Sub LexicalTest_number()
         Dim ans = LexicalModule.SplitWords(U8String.NewString("123 456.789 1.123 10_1_2_333"))
-        Assert.Equal(4, ans.Count)
+        Assert.Equal(4, ans.Length)
         Assert.Equal(WordType.Number, ans(0).kind)
         Assert.Equal(WordType.Number, ans(1).kind)
         Assert.Equal(WordType.Number, ans(2).kind)
@@ -38,7 +38,7 @@ Public Class LexicalTest
     <Fact>
     Public Sub LexicalTest_String()
         Dim ans = LexicalModule.SplitWords(U8String.NewString("""Hello"" ""World!"" ""\"""" ""'"""))
-        Assert.Equal(4, ans.Count)
+        Assert.Equal(4, ans.Length)
         Assert.Equal(WordType.StringLiteral, ans(0).kind)
         Assert.True(ans(0).str.Equals("""Hello"""))
         Assert.Equal(WordType.StringLiteral, ans(1).kind)
@@ -54,7 +54,7 @@ Public Class LexicalTest
         Assert.Equal(WordType.StringLiteral, emptyAns(0).kind)
 
         Dim ans1 = LexicalModule.SplitWords(U8String.NewString("'Hello' 'World!' '\'' ''''"))
-        Assert.Equal(4, ans1.Count)
+        Assert.Equal(4, ans1.Length)
         Assert.Equal(WordType.StringLiteral, ans1(0).kind)
         Assert.True(ans1(0).str.Equals("'Hello'"))
         Assert.Equal(WordType.StringLiteral, ans1(1).kind)
@@ -68,7 +68,7 @@ Public Class LexicalTest
     <Fact>
     Public Sub LexicalTest_Operators()
         Dim ans = LexicalModule.SplitWords(U8String.NewString("= + - * / < <= > >= == <>"))
-        Assert.Equal(11, ans.Count)
+        Assert.Equal(11, ans.Length)
         Assert.Equal(WordType.Assign, ans(0).kind)
         Assert.Equal(WordType.Plus, ans(1).kind)
         Assert.Equal(WordType.Minus, ans(2).kind)
