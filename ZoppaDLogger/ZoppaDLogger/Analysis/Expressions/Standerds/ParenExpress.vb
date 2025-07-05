@@ -37,8 +37,6 @@ Namespace Analysis
         ''' </summary>
         ''' <param name="venv">変数環境。</param>
         ''' <returns>演算結果の値。</returns>
-        ''' <exception cref="InvalidOperationException">不正な操作が行われた場合にスローされます。</exception>
-        ''' <exception cref="NotSupportedException">サポートされていない単項演算子が使用された場合にスローされます。</exception>
         Public Function GetValue(venv As AnalysisEnvironment) As IValue Implements IExpression.GetValue
             Return _expression.GetValue(venv)
         End Function

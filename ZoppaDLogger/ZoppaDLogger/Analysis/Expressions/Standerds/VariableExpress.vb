@@ -4,7 +4,14 @@ Imports ZoppaDLogger.Strings
 
 Namespace Analysis
 
-
+    ''' <summary>
+    ''' 変数式を表す構造体です。
+    ''' この構造体は、変数名を保持し、式の型を提供します。
+    ''' </summary>
+    ''' <remarks>
+    ''' 変数式は、変数の値を取得するために使用されます。
+    ''' 例: x, y, z
+    ''' </remarks>
     Structure VariableExpress
         Implements IExpression
 
@@ -17,12 +24,20 @@ Namespace Analysis
             _name = expr
         End Sub
 
+        ''' <summary>式の型を取得します。</summary>
+        ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
                 Return ExpressionType.VariableExpress
             End Get
         End Property
 
+        ''' <summary>
+        ''' 式の値を取得します。
+        ''' 変数式は、変数の値を取得するために使用されます。
+        ''' </summary>
+        ''' <param name="venv">変数環境。</param>
+        ''' <returns>変数の値。</returns>
         Public Function GetValue(venv As AnalysisEnvironment) As IValue Implements IExpression.GetValue
             Dim v = venv.Get(_name)
             Select Case v.Type

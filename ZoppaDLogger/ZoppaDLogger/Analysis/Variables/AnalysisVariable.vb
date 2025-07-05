@@ -6,6 +6,10 @@ Imports ZoppaDLogger.Strings
 
 Namespace Analysis
 
+    ''' <summary>
+    ''' 変数の値を解析するための拡張メソッドを提供するモジュールです。
+    ''' このモジュールは、変数の型に応じて値を真偽値、数値、文字列に変換する機能を提供します。
+    ''' </summary>
     Public Module AnalysisVariable
 
         ''' <summary>
@@ -65,12 +69,7 @@ Namespace Analysis
                 Case VariableType.Number
                     Return DirectCast(value, NumberVariable).Value
                 Case VariableType.Str
-                    Dim sv = DirectCast(value, StringVariable).Value
-                    If Double.TryParse(sv.ToString(), Nothing) Then
-                        Return Double.Parse(sv.ToString())
-                    Else
-                        Throw New InvalidCastException("文字列を数値に変換できません。")
-                    End If
+                    Return ParserModule.ParseNumber(DirectCast(value, StringVariable).Value)
                 Case Else
                     Throw New InvalidCastException("数値に変換できませんでした。")
             End Select

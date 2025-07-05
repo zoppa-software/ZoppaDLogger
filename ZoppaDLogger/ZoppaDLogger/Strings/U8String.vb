@@ -484,9 +484,13 @@ Namespace Strings
                 Dim i As Integer = 0
                 Dim ln As Integer
                 While i < skipCount
-                    ln = U8Char.Utf8ByteSequenceLength(Me.raw(Me._start + ci))
-                    i += 1
-                    ci += ln
+                    If Me._start + ci < Me.raw.Length Then
+                        ln = U8Char.Utf8ByteSequenceLength(Me.raw(Me._start + ci))
+                        i += 1
+                        ci += ln
+                    Else
+                        Return Nothing
+                    End If
                 End While
                 Return U8Char.NewChar(Me.raw, Me._start + ci)
             End Function

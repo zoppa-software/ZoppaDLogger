@@ -81,6 +81,8 @@ Namespace Analysis
                     Return New StringValue(DirectCast(v, U8String))
                 Case GetType(Boolean)
                     Return New BooleanValue(CBool(v))
+                Case GetType(IValue)
+                    Return DirectCast(v, IValue)
                 Case Else
                     Return New ObjectValue(v)
             End Select
@@ -116,6 +118,8 @@ Namespace Analysis
                     Return New StringValue(U8String.NewString(CStr(obj)))
                 Case GetType(U8String)
                     Return New StringValue(DirectCast(obj, U8String))
+                Case GetType(IValue())
+                    Return New ArrayValue(DirectCast(obj, IValue()))
                 Case Else
                     If obj.GetType().IsArray Then
                         Dim arr = CType(obj, Array)

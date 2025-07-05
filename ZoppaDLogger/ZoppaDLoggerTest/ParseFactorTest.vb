@@ -98,6 +98,12 @@ Public Class ParseFactorTest
         Assert.True(arrayValue3(0).Str.Equals("a"))
         Assert.True(arrayValue3(1).Str.Equals("b"))
         Assert.True(arrayValue3(2).Str.Equals("c"))
+
+        Assert.Throws(Of Analysis.AnalysisException)(
+            Sub()
+                Analysis.ParserModule.Executes("[1, , 3,]")
+            End Sub
+        )
     End Sub
 
     <Fact>

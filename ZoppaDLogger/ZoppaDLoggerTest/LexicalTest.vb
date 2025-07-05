@@ -82,4 +82,16 @@ Public Class LexicalTest
         Assert.Equal(WordType.NotEqual, ans(10).kind)
     End Sub
 
+    <Fact>
+    Public Sub LexicalTest_Identifiers()
+        Dim ans = LexicalModule.SplitWords(U8String.NewString("var1 var_2 var3"))
+        Assert.Equal(3, ans.Length)
+        Assert.Equal(WordType.Identifier, ans(0).kind)
+        Assert.Equal("var1", ans(0).str.ToString())
+        Assert.Equal(WordType.Identifier, ans(1).kind)
+        Assert.Equal("var_2", ans(1).str.ToString())
+        Assert.Equal(WordType.Identifier, ans(2).kind)
+        Assert.Equal("var3", ans(2).str.ToString())
+    End Sub
+
 End Class

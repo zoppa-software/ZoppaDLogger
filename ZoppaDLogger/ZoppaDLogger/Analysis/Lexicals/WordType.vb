@@ -8,6 +8,7 @@ Namespace Analysis
     ''' この列挙型は、プログラム内で使用されるキーワードや記号を表します。
     ''' </summary>
     Public Enum WordType
+
         ''' <summary>論理積。</summary>
         AndOperator
 

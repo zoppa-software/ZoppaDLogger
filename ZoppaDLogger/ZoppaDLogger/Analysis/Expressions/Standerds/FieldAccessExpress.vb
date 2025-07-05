@@ -24,7 +24,7 @@ Namespace Analysis
 
         ''' <summary>フィールドアクセス式のコンストラクタ。</summary>
         ''' <param name="target">アクセスするインスタンス。</param>
-        ''' <param name="propertyNames">プロパティ名リスト。</param>
+        ''' <param name="propertyName">プロパティ名リスト。</param>
         Public Sub New(target As IExpression, propertyName As U8String)
             _target = target
             _propertyName = propertyName
@@ -40,7 +40,7 @@ Namespace Analysis
 
         ''' <summary>式の値を取得します。</summary>
         ''' <param name="venv">変数環境。</param>
-        ''' <returns>配列アクセスの結果としての値。</returns>
+        ''' <returns>フィールドアクセスの結果としての値。</returns>
         ''' <remarks>
         ''' このメソッドは、変数名とインデックスを使用して配列の要素にアクセスし、その値を返します。
         ''' </remarks>

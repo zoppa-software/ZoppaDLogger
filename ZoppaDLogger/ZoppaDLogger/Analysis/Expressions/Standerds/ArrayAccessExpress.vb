@@ -53,7 +53,7 @@ Namespace Analysis
 
             If arr.Type = ValueType.Array AndAlso idx.Type = ValueType.Number Then
                 Dim arrayValue As ArrayValue = CType(arr, ArrayValue)
-                Dim index As Integer = CInt(idx.Number)
+                Dim index As Integer = CInt(Math.Floor(idx.Number))
                 If index >= 0 AndAlso index < arrayValue.Array.Length Then
                     Return arrayValue.Array(index)
                 Else

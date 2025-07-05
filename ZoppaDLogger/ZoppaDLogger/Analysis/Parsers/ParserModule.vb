@@ -37,9 +37,30 @@ Namespace Analysis
             Dim iter As New ParserIterator(Of LexicalModule.Word)(words)
 
             ' 式を解析します
-            Dim exper = ParseFactor(iter)
+            Dim exper = ParseTernaryOperator(iter)
             If iter.HasNext() Then
                 Throw New AnalysisException("式の解析に失敗しました。")
+            End If
+            Return New AnalysisResults(input, exper)
+        End Function
+
+        ''' <summary>埋め込みテキストを解析します。</summary>
+        ''' <param name="input">解析する文字列。</param>
+        ''' <returns>解析結果。</returns>
+        ''' <remarks>
+        ''' このメソッドは、埋め込みテキストを解析し、結果を返します。
+        ''' </remarks>
+        Public Function Translate(input As U8String) As AnalysisResults
+            ' 入力文字列を単語に分割します
+            Dim words = input.SplitWords()
+
+            ' 単語のイテレーターを作成します
+            Dim iter As New ParserIterator(Of LexicalModule.Word)(words)
+
+            ' 式を解析します
+            Dim exper = ParseEmbeddedText(iter)
+            If iter.HasNext() Then
+                Throw New AnalysisException("埋込式の解析に失敗しました。")
             End If
             Return New AnalysisResults(input, exper)
         End Function
