@@ -60,6 +60,9 @@ Namespace Analysis
     Structure StringValue
         Implements IValue
 
+        ' 空の文字列値を表すLazyなインスタンス
+        Private Shared ReadOnly EmptyValue As Lazy(Of StringValue) = New Lazy(Of StringValue)(Function() New StringValue(U8String.Empty))
+
         ' 文字列の値
         Public ReadOnly Value As U8String
 
@@ -74,6 +77,17 @@ Namespace Analysis
         Public ReadOnly Property Type As ValueType Implements IValue.Type
             Get
                 Return ValueType.Str
+            End Get
+        End Property
+
+        ''' <summary>空の文字列値を取得します。</summary>
+        ''' <returns>空の文字列値。</returns>
+        ''' <remarks>
+        ''' このプロパティは、空の文字列値を表すStringValueのインスタンスを返します。
+        ''' </remarks>
+        Shared ReadOnly Property Empty As StringValue
+            Get
+                Return EmptyValue.Value
             End Get
         End Property
 

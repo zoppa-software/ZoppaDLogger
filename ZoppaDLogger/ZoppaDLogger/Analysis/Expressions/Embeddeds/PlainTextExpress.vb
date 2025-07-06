@@ -12,7 +12,7 @@ Namespace Analysis
     ''' <remarks>
     ''' この式は、埋め込まれていないテキストを表現し、式の型を提供します。
     ''' </remarks>
-    Structure NoneEmbeddedExpress
+    Structure PlainTextExpress
         Implements IExpression
 
         ' 非埋込テキスト
@@ -28,13 +28,13 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.NoneEmbeddedExpress
+                Return ExpressionType.PlainTextExpress
             End Get
         End Property
 
         ''' <summary>式の値を取得します。</summary>
         ''' <param name="venv">変数環境。</param>
-        ''' <returns>NoneEmbeddedExpressの値。</returns>
+        ''' <returns>PlainTextExpress の値。</returns>
         Public Function GetValue(venv As AnalysisEnvironment) As IValue Implements IExpression.GetValue
             If IsEscape(Me._text) Then
                 ' エスケープ文字が含まれている場合は、エスケープを解除して返す
@@ -61,8 +61,11 @@ Namespace Analysis
             Return False
         End Function
 
+        ''' <summary>エスケープ文字を解除します。</summary>
+        ''' <param name="target">エスケープ解除する文字列。</param>
+        ''' <returns>エスケープ解除された文字列。</returns>
         Private Shared Function Unescape(target As U8String) As U8String
-            Dim result As New List(Of Byte)
+            Dim result As New List(Of Byte)(target.ByteLength)
             Dim iter = target.GetIterator()
             While iter.HasNext
                 Dim esc = False
@@ -109,10 +112,8 @@ Namespace Analysis
                         End Select
                     End If
                 End If
-
-                iter.MoveNext()
             End While
-            Return U8String.NewString(result.ToArray())
+            Return U8String.NewStringChangeOwner(result.ToArray())
         End Function
 
     End Structure

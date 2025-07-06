@@ -8,6 +8,7 @@ Namespace Strings
     ''' この構造体は、UTF-8エンコーディングの文字を表現します。
     ''' </summary>
     Public Structure U8Char
+        Implements IEquatable(Of U8Char)
 
         ''' <summary>文字を表現するバイト値。</summary>
         Public ReadOnly Raw0, Raw1, Raw2, Raw3 As Byte
@@ -152,21 +153,25 @@ Namespace Strings
             End Select
         End Function
 
-        ''' <summary>
-        ''' 2つのU8Charが等しいかどうかを比較します。
-        ''' </summary>
+        ''' <summary>2つのU8Charが等しいかどうかを比較します。</summary>
         ''' <param name="obj">比較対象のオブジェクト。</param>
         ''' <returns>等しい場合はTrue、それ以外はFalse。</returns>
         Public Overrides Function Equals(obj As Object) As Boolean
             If TypeOf obj Is U8Char Then
-                Dim other As U8Char = CType(obj, U8Char)
-                Return Me.Raw0 = other.Raw0 AndAlso
-                       Me.Raw1 = other.Raw1 AndAlso
-                       Me.Raw2 = other.Raw2 AndAlso
-                       Me.Raw3 = other.Raw3
+                Return Me.Equals(CType(obj, U8Char))
             Else
                 Return False
             End If
+        End Function
+
+        ''' <summary>2つのU8Charが等しいかどうかを比較します。</summary>
+        ''' <param name="obj">比較対象のオブジェクト。</param>
+        ''' <returns>等しい場合はTrue、それ以外はFalse。</returns>
+        Public Overloads Function Equals(other As U8Char) As Boolean Implements IEquatable(Of U8Char).Equals
+            Return Me.Raw0 = other.Raw0 AndAlso
+                   Me.Raw1 = other.Raw1 AndAlso
+                   Me.Raw2 = other.Raw2 AndAlso
+                   Me.Raw3 = other.Raw3
         End Function
 
         ''' <summary>

@@ -25,18 +25,21 @@ Namespace Analysis
                 Dim embedded = iter.Current
                 Select Case embedded.kind
                     Case EmbeddedType.None
-                        ' 埋め込み式以外は文字列として扱います
-                        Dim expr = New NoneEmbeddedExpress(embedded.str)
-                        exprs.Add(expr)
+                        ' 埋め込み式以外
+                        exprs.Add(New PlainTextExpress(embedded.str))
                         iter.Next()
-                        'Case LexicalEmbeddedModule.EmbeddedKind.Unfold
-                        '    ' 展開埋め込み式を解析します
-                        '    Dim inExpr = ParseDirectExecutes(embedded.str.Substring(2, embedded.str.Length - 4))
-                        '    Dim expr = New UnfoldExpress(inExpr)
-                        '    exprs.Add(expr)
-                        '    iter.Next()
-                        'Case LexicalEmbeddedModule.EmbeddedKind.NoEscapeUnfold
-                        '    ' 非エスケープ展開埋め込み式を解析します
+
+                    Case EmbeddedType.Unfold
+                        ' 展開埋め込み式
+                        Dim inExpr = ParserModule.DirectExecutes(embedded.str.Mid(2, embedded.str.Length - 3))
+                        exprs.Add(New UnfoldExpress(inExpr))
+                        iter.Next()
+
+                    Case EmbeddedType.NoEscapeUnfold
+                        ' 非エスケープ展開埋め込み式
+                        Dim inExpr = ParserModule.DirectExecutes(embedded.str.Mid(2, embedded.str.Length - 3))
+                        exprs.Add(New NoEscapeUnfoldExpress(inExpr))
+                        iter.Next()
                         '    Dim inExpr = ParseDirectExecutes(embedded.str.Substring(2, embedded.str.Length - 4))
                         '    Dim expr = New NoEscapeUnfoldExpress(inExpr)
                         '    exprs.Add(expr)
@@ -72,9 +75,11 @@ Namespace Analysis
                         '    Else
                         '        Throw New AnalysisException("Selectブロックが閉じられていません。")
                         '    End If
-                        'Case LexicalEmbeddedModule.EmbeddedKind.EmptyBlock
-                        '    ' 空のブロックは無視します
-                        '    iter.Next()
+
+                    Case EmbeddedType.EmptyBlock
+                        ' 空のブロック
+                        exprs.Add(New EmptyExpress())
+                        iter.Next()
                 End Select
             End While
 

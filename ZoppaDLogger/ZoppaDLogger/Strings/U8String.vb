@@ -7,7 +7,7 @@ Namespace Strings
     ''' 文字列（UTF-8）
     ''' </summary>
     Public Structure U8String
-        Implements IComparable(Of U8String)
+        Implements IComparable(Of U8String), IEquatable(Of U8String)
 
         ' 参照開始位置
         Private ReadOnly _start As Integer
@@ -22,12 +22,21 @@ Namespace Strings
         ''' <returns>文字列の長さ。</returns>
         Public ReadOnly Property Length As Integer
 
+        ''' <summary>参照範囲のバイト数を取得します。</summary>
+        ''' <returns>参照範囲のバイト数。</returns>
+        ''' <remarks>ByteLengthプロパティは、文字数ではなくバイト数を返します。</remarks>
+        Public ReadOnly Property ByteLength As Integer
+            Get
+                Return Me._end - Me._start
+            End Get
+        End Property
+
         ''' <summary>
         ''' 参照範囲のバイト配列を取得します。
         ''' 参照範囲内のバイトデータを返します。
         ''' </summary>
         ''' <returns>参照範囲のバイト配列。</returns>
-        Friend ReadOnly Property Data As Byte()
+        Public ReadOnly Property Data As Byte()
             Get
                 If Me.raw Is Nothing Then
                     Return Nothing
@@ -80,10 +89,26 @@ Namespace Strings
         End Function
 
         ''' <summary>
-        ''' 文字列（UTF-8）を文字列から取得します。
+        ''' 文字列（UTF-8）をバイト配列から取得します。
+        ''' バイト配列の所有者はこのU8Stringに移動されません。
         ''' </summary>
         ''' <returns>文字列。</returns>
         Public Shared Function NewString(bytes As Byte()) As U8String
+            If bytes Is Nothing Then
+                Throw New ArgumentNullException("source", "バイト配列はnullにできません")
+            End If
+            Dim newbyte() As Byte = New Byte(bytes.Length - 1) {}
+            Array.Copy(bytes, 0, newbyte, 0, bytes.Length)
+            Return New U8String(0, newbyte.Length, newbyte)
+        End Function
+
+        ''' <summary>
+        ''' 文字列（UTF-8）をバイト配列から取得します。
+        ''' バイト配列の所有者はこのU8Stringに移動されます。
+        ''' このメソッドは、バイト配列を直接参照するため、元のバイト配列は変更されないことに注意してください。
+        ''' </summary>
+        ''' <returns>文字列。</returns>
+        Public Shared Function NewStringChangeOwner(bytes As Byte()) As U8String
             If bytes Is Nothing Then
                 Throw New ArgumentNullException("source", "バイト配列はnullにできません")
             End If
@@ -114,6 +139,12 @@ Namespace Strings
                 res += 1
             End While
             Return res
+        End Function
+
+        ''' <summary>参照範囲のバイト配列をクローンし、新しくメモリを割り当ててU8Stringとして返します。</summary>
+        ''' <returns>新しいU8String。</returns>
+        Public Function NewAllocate() As U8String
+            Return U8String.NewStringChangeOwner(Me.Data)
         End Function
 
         ''' <summary>
@@ -175,8 +206,8 @@ Namespace Strings
             Dim res() As Integer = {Me.raw.Length, Me.raw.Length, 0}
 
             Dim pos As Integer = 0
-            Dim i As Integer = 0, j As Integer = 0
-            While i < Me.raw.Length
+            Dim i As Integer = Me._start, j As Integer = 0
+            While i < Math.Min(Me._end, Me.raw.Length)
                 ' 現在のバイトのUTF-8シーケンスの長さを取得します
                 Dim ln As Integer = U8Char.Utf8ByteSequenceLength(Me.raw(i))
 
@@ -231,18 +262,8 @@ Namespace Strings
         ''' <returns>Trueならば、参照範囲の文字列は指定された文字列と等しいです。</returns>
         Public Overrides Function Equals(obj As Object) As Boolean
             If TypeOf obj Is U8String Then
-                ' 参照範囲の長さが異なる場合は等しくない
-                Dim other As U8String = CType(obj, U8String)
-                If (Me._end - Me._start) <> (other._end - other._start) Then
-                    Return False
-                End If
-                ' バイトごとに比較
-                For i As Integer = 0 To Me._end - Me._start - 1
-                    If Me.raw(Me._start + i) <> other.raw(other._start + i) Then
-                        Return False
-                    End If
-                Next
-                Return True
+                Return Equals(CType(obj, U8String))
+
             ElseIf TypeOf obj Is String Then
                 ' 文字列をUTF-8バイト配列に変換して比較
                 Dim other As String = CType(obj, String)
@@ -259,6 +280,27 @@ Namespace Strings
             Else
                 Return False
             End If
+        End Function
+
+        ''' <summary>
+        ''' 文字列が等しいかどうかを確認します。
+        ''' 参照範囲内の文字列が、指定されたU8Stringと等しい場合はTrueを返します。
+        ''' </summary>
+        ''' <param name="other">比較するU8String。</param>
+        ''' <returns>Trueならば、参照範囲の文字列は指定されたU8Stringと等しいです。</returns>
+        Public Overloads Function Equals(other As U8String) As Boolean Implements IEquatable(Of U8String).Equals
+            ' 参照範囲の長さが異なる場合は等しくない
+            If (Me._end - Me._start) <> (other._end - other._start) Then
+                Return False
+            End If
+
+            ' バイトごとに比較
+            For i As Integer = 0 To Me._end - Me._start - 1
+                If Me.raw(Me._start + i) <> other.raw(other._start + i) Then
+                    Return False
+                End If
+            Next
+            Return True
         End Function
 
         ''' <summary>
@@ -380,6 +422,21 @@ Namespace Strings
         End Function
 
         ''' <summary>
+        ''' 文字列のバイトイテレーターを取得します。
+        ''' 参照範囲内のバイトを1つずつ返すイテレーターを返します。
+        ''' </summary>
+        ''' <returns>バイトイテレーター。</returns>
+        Public Function GetByteEnumerable() As U8StringByteEnumerable
+            Return New U8StringByteEnumerable(Me)
+        End Function
+
+        ''' <summary>
+        ''' 文字列のハッシュコードを取得します。
+        ''' 参照範囲内のバイト配列を基にハッシュコードを計算します。
+        ''' </summary>
+        ''' <returns>ハッシュコード。</returns>
+
+        ''' <summary>
         ''' 文字列表現を取得します。
         ''' 参照範囲内のバイト配列をUTF-8文字列に変換して返します。
         ''' 参照範囲が空の場合は空文字列を返します。
@@ -497,6 +554,112 @@ Namespace Strings
 
         End Class
 
+        ''' <summary>
+        ''' 文字列のバイトイテレーター。
+        ''' 参照範囲内のバイトを1つずつ返すイテレーターです。
+        ''' </summary>
+        Public NotInheritable Class U8StringByteEnumerable
+            Implements IEnumerable(Of Byte)
+
+            Private ReadOnly _target As U8String
+
+            ''' <summary>コンストラクタ。</summary>
+            ''' <param name="target">U8Stringオブジェクト。</param>
+            Public Sub New(target As U8String)
+                Me._target = target
+            End Sub
+
+            ''' <summary>イテレーターを取得します。</summary>
+            ''' <returns>Byteの列挙子。</returns>
+            Public Function GetEnumerator() As IEnumerator(Of Byte) Implements IEnumerable(Of Byte).GetEnumerator
+                Return New U8StringByteIterator(_target.raw, _target._start, _target._end)
+            End Function
+
+            ''' <summary>非ジェネリックなイテレーターを取得します。</summary>
+            ''' <returns>非ジェネリックな列挙子。</returns>
+            Private Function GetEnumerator1() As IEnumerator Implements IEnumerable.GetEnumerator
+                Return Me.GetEnumerator()
+            End Function
+
+        End Class
+
+        ''' <summary>
+        ''' 文字列のバイトイテレーター。
+        ''' 参照範囲内のバイトを1つずつ返すイテレーターです。
+        ''' </summary>
+        Class U8StringByteIterator
+            Implements IEnumerator(Of Byte)
+
+            ' 元のバイト配列
+            Private ReadOnly raw As Byte()
+
+            ' 参照開始位置
+            Private ReadOnly _start As Integer
+
+            ' 参照終了位置
+            Private ReadOnly _end As Integer
+
+            ' 参照位置
+            Private _current As Integer
+
+            ''' <summary>コンストラクタ。</summary>
+            ''' <param name="raw">元のバイト配列。</param>
+            ''' <param name="start">参照開始位置。</param>
+            ''' <param name="[end]">参照終了位置。</param>
+            Public Sub New(raw() As Byte, start As Integer, [end] As Integer)
+                Me.raw = raw
+                Me._start = start
+                Me._end = [end]
+                Me._current = -1
+            End Sub
+
+            ''' <summary>
+            ''' 現在のバイトを取得します。
+            ''' 参照位置が有効な範囲内であれば、現在のバイトを返します。
+            ''' それ以外の場合は例外をスローします。
+            ''' </summary>
+            ''' <returns>現在位置のバイト値。</returns>
+            Public ReadOnly Property Current As Byte Implements IEnumerator(Of Byte).Current
+                Get
+                    Return Me.raw(Me._start + Me._current)
+                End Get
+            End Property
+
+            ''' <summary>
+            ''' 現在のバイトを取得します。
+            ''' 参照位置が有効な範囲内であれば、現在のバイトを返します。
+            ''' それ以外の場合は例外をスローします。
+            ''' </summary>
+            ''' <returns>現在位置のバイト値。</returns>
+            Private ReadOnly Property IEnumerator_Current As Object Implements IEnumerator.Current
+                Get
+                    Return Current
+                End Get
+            End Property
+
+            ''' <summary>イテレーターをリセットします。</summary>
+            Public Sub Reset() Implements IEnumerator.Reset
+                Me._current = -1
+            End Sub
+
+            ''' <summary>
+            ''' 次のバイトに進みます。
+            ''' 参照位置を次のバイトに進め、次のバイトが範囲内であればTrueを返します。
+            ''' </summary>
+            ''' <returns>次のバイトが存在する場合はTrue。</returns>
+            ''' <exception cref="InvalidOperationException">イテレーターの位置が範囲外です。</exception>
+            Public Function MoveNext() As Boolean Implements IEnumerator.MoveNext
+                Me._current += 1
+                Return Me._current < Me._end - Me._start
+            End Function
+
+            ''' <summary>破棄処理を行います。</summary>
+            ''' <remarks>このメソッドは、IDisposableインターフェイスを実装しています。</remarks>
+            Public Sub Dispose() Implements IDisposable.Dispose
+                ' 未使用
+            End Sub
+
+        End Class
 
     End Structure
 

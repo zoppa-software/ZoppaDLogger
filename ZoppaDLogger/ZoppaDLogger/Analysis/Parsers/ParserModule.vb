@@ -30,6 +30,20 @@ Namespace Analysis
         ''' このメソッドは、指定された文字列を解析し、結果を返します。
         ''' </remarks>
         Public Function Executes(input As U8String) As AnalysisResults
+            ' 入力文字列をクローン
+            Dim newInput = input.NewAllocate()
+
+            ' 式を解析します
+            Return New AnalysisResults(newInput, DirectExecutes(newInput))
+        End Function
+
+        ''' <summary>文字列を解析し、結果を取得します。</summary>
+        ''' <param name="input">解析する文字列。</param>
+        ''' <returns>解析結果の式。</returns>
+        ''' <remarks>
+        ''' このメソッドは、指定された文字列を解析し、結果の式を返します。
+        ''' </remarks>
+        Function DirectExecutes(input As U8String) As IExpression
             ' 入力文字列を単語に分割します
             Dim words = input.SplitWords()
 
@@ -41,7 +55,7 @@ Namespace Analysis
             If iter.HasNext() Then
                 Throw New AnalysisException("式の解析に失敗しました。")
             End If
-            Return New AnalysisResults(input, exper)
+            Return exper
         End Function
 
         ''' <summary>埋め込みテキストを解析します。</summary>

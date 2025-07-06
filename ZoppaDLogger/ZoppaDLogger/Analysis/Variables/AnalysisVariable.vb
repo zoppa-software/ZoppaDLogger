@@ -108,9 +108,9 @@ Namespace Analysis
                         If i > 0 Then
                             res.Add(CByte(44)) ' カンマのASCIIコード
                         End If
-                        res.AddRange(av(i).GetValue(venv).Str.Data)
+                        res.AddRange(av(i).GetValue(venv).Str.GetByteEnumerable())
                     Next
-                    Return U8String.NewString(res.ToArray())
+                    Return U8String.NewStringChangeOwner(res.ToArray())
 
                 Case VariableType.Obj
                     Dim obj = DirectCast(value, ObjectVariable).Value

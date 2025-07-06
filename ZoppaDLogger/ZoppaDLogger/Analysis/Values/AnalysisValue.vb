@@ -197,9 +197,9 @@ Namespace Analysis
                         If i > 0 Then
                             res.Add(CByte(44)) ' カンマのASCIIコード
                         End If
-                        res.AddRange(o(i).Str.Data)
+                        res.AddRange(o(i).Str.GetByteEnumerable())
                     Next
-                    Return U8String.NewString(res.ToArray())
+                    Return U8String.NewStringChangeOwner(res.ToArray())
                 Case Else
                     Throw New InvalidOperationException("文字列に変換することができません")
             End Select

@@ -206,7 +206,7 @@ Namespace Analysis
         ''' このメソッドは、埋込式ブロックを取得します。
         ''' </remarks>
         Private Function GetStatementBlock(input As U8String, iter As U8String.U8StringIterator) As EmbeddedBlock
-            Dim cmd = GetEmbeddedBlock(input, iter, True)
+            Dim cmd = GetEmbeddedBlock(input, iter, False)
             If cmd.StartWith(IfLiteral) AndAlso If(cmd.At(3)?.IsWhiteSpace, True) Then
                 Return New EmbeddedBlock() With {
                     .str = cmd.Mid(4, cmd.Length - 5),

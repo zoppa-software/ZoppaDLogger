@@ -1,5 +1,6 @@
 ﻿Option Strict On
 Option Explicit On
+
 Imports ZoppaDLogger.Strings
 
 Namespace Analysis
@@ -43,12 +44,12 @@ Namespace Analysis
             For Each expr In _expressions
                 Dim s = expr.GetValue(venv).Str
                 If s.Length > 0 Then
-                    result.AddRange(s.Data)
+                    result.AddRange(s.GetByteEnumerable())
                 End If
             Next
 
             ' 文字列に変換して返す
-            Return New StringValue(U8String.NewString(result.ToArray()))
+            Return New StringValue(U8String.NewStringChangeOwner(result.ToArray()))
         End Function
 
     End Structure

@@ -438,7 +438,7 @@ Namespace Analysis
                     End Select
                 End If
             End While
-            Return U8String.NewString(buffer.ToArray())
+            Return U8String.NewStringChangeOwner(buffer.ToArray())
         End Function
 
         ''' <summary>

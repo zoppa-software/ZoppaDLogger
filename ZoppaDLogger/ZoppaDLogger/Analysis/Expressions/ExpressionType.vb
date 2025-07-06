@@ -9,11 +9,14 @@ Namespace Analysis
     ''' </summary>
     Public Enum ExpressionType
 
+        ''' <summary>空式。</summary>
+        EmptyExpress
+
         ''' <summary>リスト式。</summary>
         ListExpress
 
         ''' <summary>非展開式式。</summary>
-        NoneEmbeddedExpress
+        PlainTextExpress
 
         ''' <summary>展開式式（エスケープ）</summary>
         UnfoldExpress
