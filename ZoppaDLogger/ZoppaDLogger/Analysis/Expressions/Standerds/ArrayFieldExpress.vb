@@ -23,6 +23,9 @@ Namespace Analysis
         ''' 配列フィールド式は、複数の式を配列として扱うために使用されます。
         ''' </summary>
         Public Sub New(items() As IExpression)
+            If items Is Nothing Then
+                Throw New ArgumentNullException(NameOf(items))
+            End If
             _items = items
         End Sub
 

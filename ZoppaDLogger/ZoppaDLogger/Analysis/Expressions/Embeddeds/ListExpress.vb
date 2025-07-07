@@ -22,6 +22,9 @@ Namespace Analysis
         ''' <summary>コンストラクタ。</summary>
         ''' <param name="expressions">リスト内の式のリスト。</param>
         Public Sub New(expressions As IExpression())
+            If expressions Is Nothing Then
+                Throw New ArgumentNullException(NameOf(expressions))
+            End If
             _expressions = expressions
         End Sub
 
@@ -42,7 +45,7 @@ Namespace Analysis
         Public Function GetValue(venv As AnalysisEnvironment) As IValue Implements IExpression.GetValue
             Dim result As New List(Of Byte)()
             For Each expr In _expressions
-                Dim s = expr.GetValue(venv).Str
+                Dim s = If(expr.GetValue(venv)?.Str, U8String.Empty)
                 If s.Length > 0 Then
                     result.AddRange(s.GetByteEnumerable())
                 End If

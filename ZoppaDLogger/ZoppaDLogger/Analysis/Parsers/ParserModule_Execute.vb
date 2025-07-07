@@ -216,6 +216,144 @@ Namespace Analysis
         ''' 数値、文字列、真偽値などの基本的な要素を処理します。
         ''' </remarks>
         Private Function ParseFactor(iter As ParserIterator(Of LexicalModule.Word)) As IExpression
+            ' 前の要素を取得
+            Dim prevExpr = ParsePrevFactor(iter)
+
+            ' 次の要素が存在する限り、配列フィールドアクセスやフィールドアクセスを解析します
+            While iter.HasNext()
+                Select Case iter.Current.kind
+                    Case WordType.LeftBracket
+                        ' 配列フィールドアクセスの場合
+                        Dim expr = New ArrayAccessExpress(prevExpr, ParseBracket(iter))
+                        If iter.HasNext() AndAlso iter.Current.kind = WordType.RightBracket Then
+                            ' 右括弧が存在する場合、式を閉じる
+                            iter.Next()
+                            prevExpr = expr
+                        Else
+                            Throw New AnalysisException("配列フィールドが閉じられていません。")
+                        End If
+
+                    Case WordType.Period
+                        ' フィールドアクセスの場合
+                        iter.Next()
+                        If iter.Current.kind = WordType.Identifier Then
+                            prevExpr = New FieldAccessExpress(prevExpr, iter.Current.str)
+                            iter.Next()
+                        Else
+                            Throw New AnalysisException("フィールド名が指定されていません。")
+                        End If
+                    Case Else
+                        Exit While
+                End Select
+            End While
+            Return prevExpr
+
+
+            'Select Case Word.kind
+            '    Case WordType.Number
+            '        ' 数値を解析
+            '        iter.Next()
+            '        Return New NumberExpress(ParseNumber(Word.str))
+
+            '    Case WordType.StringLiteral
+            '        ' 文字列を解析
+            '        iter.Next()
+            '        Return New StringExpress(ParseString(Word.str))
+
+            '    Case WordType.TrueLiteral
+            '        ' 真偽値の真を解析
+            '        iter.Next()
+            '        Return New BooleanExpress(True)
+
+            '    Case WordType.FalseLiteral
+            '        ' 真偽値の偽を解析
+            '        iter.Next()
+            '        Return New BooleanExpress(False)
+
+            '    Case WordType.Plus, WordType.Minus, WordType.Not
+            '        ' 単項演算子を解析
+            '        iter.Next()
+            '        Return New UnaryExpress(Word.kind, ParseFactor(iter))
+
+            '    Case WordType.LeftParen
+            '        ' ()括弧内の式を解析
+            '        Dim expr = ParseParen(iter)
+            '        If iter.HasNext() AndAlso iter.Current.kind = WordType.RightParen Then
+            '            ' 右括弧が存在する場合、式を閉じる
+            '            iter.Next()
+            '            Return expr
+            '        Else
+            '            Throw New AnalysisException("括弧が閉じられていません。")
+            '        End If
+
+            '    Case WordType.LeftBracket
+            '        ' []括弧内の式を解析
+            '        Dim expr = New ArrayFieldExpress(ParseCommaSplitParameter(WordType.LeftBracket, WordType.RightBracket, iter))
+            '        If iter.HasNext() AndAlso iter.Current.kind = WordType.RightBracket Then
+            '            ' 右括弧が存在する場合、式を閉じる
+            '            iter.Next()
+            '            Return expr
+            '        Else
+            '            Throw New AnalysisException("括弧が閉じられていません。")
+            '        End If
+
+            '    Case WordType.Identifier
+            '        iter.Next()
+
+            '        ' 関数呼び出しの場合
+            '        If iter.HasNext() AndAlso iter.Current.kind = WordType.LeftParen Then
+            '            Dim expr = New FunctionCallExpress(Word.str, ParseCommaSplitParameter(WordType.LeftParen, WordType.RightParen, iter))
+            '            If iter.HasNext() AndAlso iter.Current.kind = WordType.RightParen Then
+            '                ' 右括弧が存在する場合、式を閉じる
+            '                iter.Next()
+            '                Return expr
+            '            Else
+            '                Throw New AnalysisException("関数呼び出しが閉じられていません。")
+            '            End If
+            '        End If
+
+            '        Dim vexpr As IExpression = New VariableExpress(Word.str)
+            '        While iter.HasNext()
+            '            Select Case iter.Current.kind
+            '                Case WordType.LeftBracket
+            '                    ' 配列フィールドアクセスの場合
+            '                    Dim expr = New ArrayAccessExpress(vexpr, ParseBracket(iter))
+            '                    If iter.HasNext() AndAlso iter.Current.kind = WordType.RightBracket Then
+            '                        ' 右括弧が存在する場合、式を閉じる
+            '                        iter.Next()
+            '                        vexpr = expr
+            '                    Else
+            '                        Throw New AnalysisException("配列フィールドが閉じられていません。")
+            '                    End If
+
+            '                Case WordType.Period
+            '                    ' フィールドアクセスの場合
+            '                    iter.Next()
+            '                    If iter.Current.kind = WordType.Identifier Then
+            '                        vexpr = New FieldAccessExpress(vexpr, iter.Current.str)
+            '                        iter.Next()
+            '                    Else
+            '                        Throw New AnalysisException("フィールド名が指定されていません。")
+            '                    End If
+            '                Case Else
+            '                    Exit While
+            '            End Select
+            '        End While
+            '        Return vexpr
+
+            '    Case Else
+            '        Throw New AnalysisException("要素が解析できません。")
+            'End Select
+        End Function
+
+        ''' <summary>
+        ''' 要素の前の因子を解析します。
+        ''' この関数は、単語のイテレーターを使用して、前の因子を解析し、対応する式を返します。
+        ''' 数値、文字列、真偽値、単項演算子、括弧内の式などを処理します。
+        ''' </summary>
+        ''' <param name="iter">イテレータ。</param>
+        ''' <returns>要素式。</returns>
+        Private Function ParsePrevFactor(iter As ParserIterator(Of LexicalModule.Word)) As IExpression
             Dim word = iter.Current
             Select Case word.kind
                 Case WordType.Number
@@ -279,35 +417,7 @@ Namespace Analysis
                             Throw New AnalysisException("関数呼び出しが閉じられていません。")
                         End If
                     End If
-
-                    Dim vexpr As IExpression = New VariableExpress(word.str)
-                    While iter.HasNext()
-                        Select Case iter.Current.kind
-                            Case WordType.LeftBracket
-                                ' 配列フィールドアクセスの場合
-                                Dim expr = New ArrayAccessExpress(vexpr, ParseBracket(iter))
-                                If iter.HasNext() AndAlso iter.Current.kind = WordType.RightBracket Then
-                                    ' 右括弧が存在する場合、式を閉じる
-                                    iter.Next()
-                                    vexpr = expr
-                                Else
-                                    Throw New AnalysisException("配列フィールドが閉じられていません。")
-                                End If
-
-                            Case WordType.Period
-                                ' フィールドアクセスの場合
-                                iter.Next()
-                                If iter.Current.kind = WordType.Identifier Then
-                                    vexpr = New FieldAccessExpress(vexpr, iter.Current.str)
-                                    iter.Next()
-                                Else
-                                    Throw New AnalysisException("フィールド名が指定されていません。")
-                                End If
-                            Case Else
-                                Exit While
-                        End Select
-                    End While
-                    Return vexpr
+                    Return New VariableExpress(word.str)
 
                 Case Else
                     Throw New AnalysisException("要素が解析できません。")
@@ -536,7 +646,9 @@ Namespace Analysis
         ''' <remarks>
         ''' この関数は、カンマで区切られた式を解析し、結果を `IExpression` の配列として返します。
         ''' </remarks>
-        Private Function ParseCommaSplitParameter(lParen As WordType, rParen As WordType, iter As ParserIterator(Of Word)) As IExpression()
+        Private Function ParseCommaSplitParameter(lParen As WordType,
+                                                  rParen As WordType,
+                                                  iter As ParserIterator(Of Word)) As IExpression()
             Dim exper As New List(Of IExpression)()
 
             ' 左括弧をスキップ
@@ -567,6 +679,34 @@ Namespace Analysis
             End While
 
             Return exper.ToArray()
+        End Function
+
+        ''' <summary>
+        ''' 変数の式を解析します。
+        ''' この関数は、変数の名前と値を解析し、結果を `VariableDefineExpress` として返します。
+        ''' 変数の式は、変数の名前と値を持ち、代入記号 '=' を使用して値を設定します。
+        ''' </summary>
+        ''' <param name="iter">解析する単語のイテレーター。</param>
+        ''' <returns>変数定義式。</returns>
+        Private Function ParseVvariable(iter As ParserIterator(Of Word)) As VariableDefineExpress
+            ' 変数の名前を取得
+            Dim name As U8String
+            If iter.HasNext() AndAlso iter.Current.kind = WordType.Identifier Then
+                name = iter.Current.str
+                iter.Next()
+            Else
+                Throw New AnalysisException("無効な変数名です。")
+            End If
+
+            ' 変数の代入記号 '=' を確認
+            If iter.HasNext() AndAlso iter.Current.kind <> WordType.Assign Then
+                Throw New AnalysisException("変数の代入記号 '=' がありません。")
+            End If
+            iter.Next() ' '=' をスキップ
+
+            ' 変数の値を解析
+            Dim valueExpr = ParseTernaryOperator(iter)
+            Return New VariableDefineExpress(name, valueExpr)
         End Function
 
     End Module

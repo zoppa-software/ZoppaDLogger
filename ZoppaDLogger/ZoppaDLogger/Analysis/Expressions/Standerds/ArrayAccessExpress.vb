@@ -28,6 +28,12 @@ Namespace Analysis
         ''' このコンストラクタは、配列アクセスのためのターゲット変数とインデックスを初期化します。
         ''' </remarks>
         Public Sub New(target As IExpression, index As IExpression)
+            If target Is Nothing Then
+                Throw New ArgumentNullException(NameOf(target))
+            End If
+            If index Is Nothing Then
+                Throw New ArgumentNullException(NameOf(index))
+            End If
             Me._target = target
             Me._index = index
         End Sub
@@ -52,7 +58,7 @@ Namespace Analysis
             Dim idx = _index.GetValue(venv)
 
             If arr.Type = ValueType.Array AndAlso idx.Type = ValueType.Number Then
-                Dim arrayValue As ArrayValue = CType(arr, ArrayValue)
+                Dim arrayValue As ArrayValue = DirectCast(arr, ArrayValue)
                 Dim index As Integer = CInt(Math.Floor(idx.Number))
                 If index >= 0 AndAlso index < arrayValue.Array.Length Then
                     Return arrayValue.Array(index)

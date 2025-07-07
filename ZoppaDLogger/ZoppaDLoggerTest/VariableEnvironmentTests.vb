@@ -43,10 +43,10 @@ Public Class VariableEnvironmentTests
     Public Sub Hierarchy_ScopeTest()
         Dim env As New AnalysisEnvironment()
         env.RegistNumber("x", 1)
-        env.AddHierarchy()
-        env.RegistNumber("x", 2)
-        Assert.Equal(2, env.Get("x").Number)
-        env.RemoveHierarchy()
+        Using env.GetScope()
+            env.RegistNumber("x", 2)
+            Assert.Equal(2, env.Get("x").Number)
+        End Using
         Assert.Equal(1, env.Get("x").Number)
     End Sub
 

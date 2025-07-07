@@ -379,4 +379,30 @@ Public Class ParseFactorTest
         Assert.True(result4.Expression.GetValue(Nothing).Str.Equals("No"))
     End Sub
 
+    <Fact>
+    Public Sub TestInvalidSyntax()
+        ' 無効な構文の解析をテスト
+        Assert.Throws(Of Analysis.AnalysisException)(
+            Sub()
+                Analysis.ParserModule.Executes("123.456 +")
+            End Sub
+        )
+        Assert.Throws(Of Analysis.AnalysisException)(
+            Sub()
+                Analysis.ParserModule.Executes("true and")
+            End Sub
+        )
+        Assert.Throws(Of Analysis.AnalysisException)(
+            Sub()
+                Analysis.ParserModule.Executes("1 ? 2")
+            End Sub
+        )
+    End Sub
+
+    <Fact>
+    Public Sub TestArrayFactor()
+        Dim result1 = Analysis.ParserModule.Executes("[100, 110, 120][2]")
+        Assert.Equal(120.0, result1.Expression.GetValue(Nothing).Number)
+    End Sub
+
 End Class

@@ -79,9 +79,9 @@ Namespace Collections
 
             ' 挿入操作の実装
             Dim update As New UpdateInfo With {
-            .Done = False,
-            .NewNode = Nothing
-        }
+                .Done = False,
+                .NewNode = Nothing
+            }
 
             SyncLock Me._lock
                 If Me._rootBranch Is Nothing Then
@@ -197,9 +197,9 @@ Namespace Collections
                 leaf.Count = M + 1
             End If
 #If DEBUG Then
-        For d As Integer = M + 1 To leaf.values.Length - 1
-            leaf.values(d) = CType(Nothing, T)
-        Next
+            For d As Integer = M + 1 To leaf.values.Length - 1
+                leaf.values(d) = CType(Nothing, T)
+            Next
 #End If
             Return newLeaf
         End Function
@@ -259,6 +259,13 @@ Namespace Collections
             Return CType(parts, Leaf).values(0)
         End Function
 
+        Private Shared Function TraverseLast(parts As IParts) As T
+            While TypeOf parts Is Branch
+                parts = CType(parts, Branch).children(parts.Count - 1)
+            End While
+            Return CType(parts, Leaf).values(parts.Count - 1)
+        End Function
+
         ''' <summary>
         ''' 枝要素を分割して新しい葉要素を生成します。
         ''' </summary>
@@ -299,9 +306,9 @@ Namespace Collections
                 branch.Count = M + 1
             End If
 #If DEBUG Then
-        For d As Integer = M + 1 To branch.children.Length - 1
-            branch.children(d) = Nothing
-        Next
+            For d As Integer = M + 1 To branch.children.Length - 1
+                branch.children(d) = Nothing
+            Next
 #End If
             Return newBranch
         End Function
@@ -372,9 +379,9 @@ Namespace Collections
             While TypeOf ptr Is Branch
                 ' 指定値が枝に存在するか確認
                 Dim brh As Branch = CType(ptr, Branch)
-                Dim p As Integer = 0
-                While p < brh.Count - 1 AndAlso TraverseHead(brh.children(p + 1)).CompareTo(value) <= 0
-                    p += 1
+                Dim p As Integer = brh.Count - 1
+                While p > 0 AndAlso TraverseLast(brh.children(p - 1)).CompareTo(value) >= 0
+                    p -= 1
                 End While
 
                 ' 枝の子要素をたどる
@@ -383,6 +390,7 @@ Namespace Collections
                     Exit While
                 End If
             End While
+
             Return CType(ptr, Leaf)
         End Function
 
@@ -398,9 +406,9 @@ Namespace Collections
             End If
             ' 削除操作の実装
             Dim delete As New DeleteInfo With {
-            .Done = False,
-            .NeedRebuild = False
-        }
+                .Done = False,
+                .NeedRebuild = False
+            }
             SyncLock Me._lock
                 If Me._rootBranch Is Nothing Then
                     ' ルートノードがnullの場合、葉要素から値を削除
@@ -445,7 +453,7 @@ Namespace Collections
                 ' ノードの値の数を減らす、小さくなりすぎたら needRebuild フラグを立てる
                 leaf.Count -= 1
 #If DEBUG Then
-            leaf.values(leaf.Count) = CType(Nothing, T) ' デバッグ用に値をクリア
+                leaf.values(leaf.Count) = CType(Nothing, T) ' デバッグ用に値をクリア
 #End If
                 delete.Done = True
                 delete.NeedRebuild = leaf.Count <= M
@@ -463,9 +471,9 @@ Namespace Collections
         ''' <returns>削除情報。</returns>
         Private Function DeleteIntoBranch(branch As Branch, value As T, delete As DeleteInfo) As DeleteInfo
             ' 指定値が挿入される位置を取得
-            Dim del As Integer = 0
-            While del < branch.Count - 1 AndAlso TraverseHead(branch.children(del + 1)).CompareTo(value) <= 0
-                del += 1
+            Dim del As Integer = branch.Count - 1
+            While del > 0 AndAlso TraverseLast(branch.children(del - 1)).CompareTo(value) >= 0
+                del -= 1
             End While
 
             ' 枝、葉の削除位置から値を削除する
@@ -511,7 +519,7 @@ Namespace Collections
                 End If
                 branch.Count -= 1
 #If DEBUG Then
-            branch.children(branch.Count) = Nothing
+                branch.children(branch.Count) = Nothing
 #End If
             Else
                 ' 削除する枝と右の枝とをマージ
@@ -526,7 +534,7 @@ Namespace Collections
                 End If
                 branch.Count -= 1
 #If DEBUG Then
-            branch.children(branch.Count) = Nothing
+                branch.children(branch.Count) = Nothing
 #End If
             End If
         End Sub
@@ -561,7 +569,7 @@ Namespace Collections
                 End If
                 branch.Count -= 1
 #If DEBUG Then
-            branch.children(branch.Count) = Nothing
+                branch.children(branch.Count) = Nothing
 #End If
             Else
                 ' 削除する葉と右の葉とをマージ
@@ -577,7 +585,7 @@ Namespace Collections
                 End If
                 branch.Count -= 1
 #If DEBUG Then
-            branch.children(branch.Count) = Nothing
+                branch.children(branch.Count) = Nothing
 #End If
             End If
         End Sub
@@ -604,9 +612,9 @@ Namespace Collections
                 rightLeaf.Count += moveCount
                 leftLeaf.Count = split
 #If DEBUG Then
-            For d As Integer = split To leftLeaf.values.Length - 1
-                leftLeaf.values(d) = CType(Nothing, T)
-            Next
+                For d As Integer = split To leftLeaf.values.Length - 1
+                    leftLeaf.values(d) = CType(Nothing, T)
+                Next
 #End If
             ElseIf rightLeaf.Count > split Then
                 ' 右の葉が大きい場合、左に値を移動
@@ -622,9 +630,9 @@ Namespace Collections
                 leftLeaf.Count += moveCount
                 rightLeaf.Count = split
 #If DEBUG Then
-            For d As Integer = split To rightLeaf.values.Length - 1
-                rightLeaf.values(d) = CType(Nothing, T)
-            Next
+                For d As Integer = split To rightLeaf.values.Length - 1
+                    rightLeaf.values(d) = CType(Nothing, T)
+                Next
 #End If
             End If
         End Sub
@@ -651,9 +659,9 @@ Namespace Collections
                 rightBranch.Count += moveCount
                 leftBranch.Count = split
 #If DEBUG Then
-            For d As Integer = split To leftBranch.children.Length - 1
-                leftBranch.children(d) = Nothing
-            Next
+                For d As Integer = split To leftBranch.children.Length - 1
+                    leftBranch.children(d) = Nothing
+                Next
 #End If
             ElseIf rightBranch.Count > split Then
                 ' 右の枝が大きい場合、左に値を移動
@@ -669,9 +677,9 @@ Namespace Collections
                 leftBranch.Count += moveCount
                 rightBranch.Count = split
 #If DEBUG Then
-            For d As Integer = split To rightBranch.children.Length - 1
-                rightBranch.children(d) = Nothing
-            Next
+                For d As Integer = split To rightBranch.children.Length - 1
+                    rightBranch.children(d) = Nothing
+                Next
 #End If
             End If
         End Sub

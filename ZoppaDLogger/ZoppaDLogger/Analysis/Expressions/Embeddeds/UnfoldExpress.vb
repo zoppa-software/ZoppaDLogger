@@ -16,6 +16,9 @@ Namespace Analysis
         ''' <summary>コンストラクタ。</summary>
         ''' <param name="expr">埋込式。</param>
         Public Sub New(expr As IExpression)
+            If expr Is Nothing Then
+                Throw New ArgumentNullException(NameOf(expr))
+            End If
             _expr = expr
         End Sub
 
@@ -33,7 +36,6 @@ Namespace Analysis
         ''' </summary>
         ''' <param name="venv">変数環境。</param>
         ''' <returns>展開された埋込テキストの値。</returns>
-        ''' <exception cref="InvalidOperationException">不正な操作が行われた場合にスローされます。</exception>
         Public Function GetValue(venv As AnalysisEnvironment) As IValue Implements IExpression.GetValue
             Return _expr.GetValue(venv)
         End Function

@@ -22,6 +22,9 @@ Namespace Analysis
         VariableDefine
 
         ''' <summary>ifブロック。</summary>
+        IfStatement
+
+        ''' <summary>ifブロック。</summary>
         IfBlock
 
         ''' <summary>else ifブロック。</summary>

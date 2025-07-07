@@ -24,17 +24,20 @@ Namespace Analysis
         ''' <summary>非展開式式（アンエスケープ）</summary>
         NoEscapeUnfoldExpress
 
-        ''' <summary>変数式リスト。</summary>
-        VariableListExpress
-
         ''' <summary>変数式。</summary>
         VariableExpress
 
+        ''' <summary>変数宣言式リスト。</summary>
+        VariablesDefineListExpress
+
+        ''' <summary>変数宣言式。</summary>
+        VariableDefineExpress
+
+        ''' <summary>ifブロック。</summary>
+        IfStatementExpress
+
         ''' <summary>IF式。</summary>
         IfExpress
-
-        ''' <summary>IF条件条件式。</summary>
-        IfConditionExpress
 
         ''' <summary>IF Else式。</summary>
         ElseExpress

@@ -1,5 +1,6 @@
 ﻿Imports System
 Imports System.Globalization
+Imports System.Security.AccessControl
 Imports Xunit
 Imports ZoppaDLogger
 Imports ZoppaDLogger.Collections
@@ -141,6 +142,52 @@ Public Class BPlusTreeTest
     Public Sub Search_Null_ThrowsArgumentNullException()
         Dim tree As New BPlusTree(Of String)()
         Assert.Equal(Nothing, tree.Search(Nothing))
+    End Sub
+
+    Private Class MyEntry
+        Implements IComparable(Of MyEntry)
+
+        Public Property Key As Integer
+        Public Property UniqueKey As Integer
+
+        Public Function CompareTo(other As MyEntry) As Integer Implements IComparable(Of MyEntry).CompareTo
+            Return Me.Key.CompareTo(other.Key)
+        End Function
+    End Class
+
+    <Fact>
+    Public Sub Insert_EntryWithUniqueKey()
+        Dim btree As New BPlusTree(Of MyEntry)(2)
+        Dim datas = New MyEntry(99) {}
+        For i As Integer = 0 To 99
+            datas(i) = New MyEntry With {.Key = i \ 5 + 1, .UniqueKey = i + 1}
+        Next
+        Dim rnd As New Random()
+        For i As Integer = 0 To 98
+            Dim index = rnd.Next(i, 100)
+            Dim temp = datas(i)
+            datas(i) = datas(index)
+            datas(index) = temp
+        Next
+        For i As Integer = 0 To 99
+            Dim imax = 1
+            If btree.Contains(datas(i)) Then
+                imax = btree.Search(datas(i)).UniqueKey + 1
+            End If
+            datas(i).UniqueKey = imax
+            btree.Insert(datas(i))
+        Next
+
+        For Each entry In btree
+            Debug.WriteLine($"Key: {entry.Key}, UniqueKey: {entry.UniqueKey}")
+        Next
+
+        For i As Integer = 1 To 20
+            btree.Remove(New MyEntry With {.Key = i})
+        Next
+        For Each entry In btree
+            Debug.WriteLine($"Key: {entry.Key}, UniqueKey: {entry.UniqueKey}")
+        Next
     End Sub
 
 End Class

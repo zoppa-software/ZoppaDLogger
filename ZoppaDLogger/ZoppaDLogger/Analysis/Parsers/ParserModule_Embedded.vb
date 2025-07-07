@@ -2,6 +2,7 @@
 Option Explicit On
 
 Imports System.Linq.Expressions
+Imports ZoppaDLogger.Analysis.Variables
 Imports ZoppaDLogger.Strings
 
 Namespace Analysis
@@ -25,38 +26,41 @@ Namespace Analysis
                 Dim embedded = iter.Current
                 Select Case embedded.kind
                     Case EmbeddedType.None
-                        ' 埋め込み式以外
+                        ' 埋込式以外
                         exprs.Add(New PlainTextExpress(embedded.str))
                         iter.Next()
 
                     Case EmbeddedType.Unfold
-                        ' 展開埋め込み式
+                        ' 展開埋込式
                         Dim inExpr = ParserModule.DirectExecutes(embedded.str.Mid(2, embedded.str.Length - 3))
                         exprs.Add(New UnfoldExpress(inExpr))
                         iter.Next()
 
                     Case EmbeddedType.NoEscapeUnfold
-                        ' 非エスケープ展開埋め込み式
+                        ' 非エスケープ展開埋込式
                         Dim inExpr = ParserModule.DirectExecutes(embedded.str.Mid(2, embedded.str.Length - 3))
                         exprs.Add(New NoEscapeUnfoldExpress(inExpr))
                         iter.Next()
-                        '    Dim inExpr = ParseDirectExecutes(embedded.str.Substring(2, embedded.str.Length - 4))
-                        '    Dim expr = New NoEscapeUnfoldExpress(inExpr)
-                        '    exprs.Add(expr)
-                        '    iter.Next()
-                        'Case LexicalEmbeddedModule.EmbeddedKind.Variables
-                        '    ' 変数埋め込み式を解析します
-                        '    exprs.Add(ParseVariablesBlock(embedded))
-                        '    iter.Next()
-                        'Case LexicalEmbeddedModule.EmbeddedKind.IfBlock
-                        '    ' Ifブロックを解析します
-                        '    Dim expr = ParseIfBlock(iter)
-                        '    If iter.HasNext() AndAlso iter.Current.kind = LexicalEmbeddedModule.EmbeddedKind.EndIfBlock Then
-                        '        exprs.Add(expr)
-                        '        iter.Next()
-                        '    Else
-                        '        Throw New AnalysisException("Ifブロックが閉じられていません。")
-                        '    End If
+
+                    Case EmbeddedType.VariableDefine
+                        ' 変数定義埋込式
+                        exprs.Add(ParseVariableDefineBlock(embedded.str.Mid(2, embedded.str.Length - 3)))
+                        iter.Next()
+
+                    Case EmbeddedType.IfBlock
+                        ' Ifブロックを解析します
+                        Dim expr = ParseIfStatement(iter)
+                        If iter.HasNext() AndAlso iter.Current.kind = EmbeddedType.EndIfBlock Then
+                            exprs.Add(expr)
+                            iter.Next()
+                        Else
+                            Throw New AnalysisException("Ifブロックが閉じられていません。")
+                        End If
+
+                    Case EmbeddedType.ElseIfBlock, EmbeddedType.ElseBlock, EmbeddedType.EndIfBlock
+                        ' ElseIfブロック、Elseブロック、EndIfブロックはエラー
+                        Throw New AnalysisException("Ifブロックが開始されていません。ElseIf、Else、EndIfはIfブロック内でのみ使用できます。")
+
                         'Case LexicalEmbeddedModule.EmbeddedKind.ForBlock
                         '    ' Forブロックを解析します
                         '    Dim expr = ParseForBlock(iter)
@@ -102,34 +106,6 @@ Namespace Analysis
         '        Const embedded = iter.peek().?;
 
         '        switch (embedded.kind) {
-        '            .None => {
-        '                // 埋め込み式以外は文字列として扱います
-        '                Const expr = store.get({}) Catch Return ParserError.OutOfMemoryExpression;
-        '                expr.*= .{ .NoneEmbeddedExpress = embedded.str };
-        '                exprs.append(expr) catch return ParserError.OutOfMemoryExpression;
-        '                _ = iter.next();
-        '            },
-        '            .Unfold => {
-        '                // 展開埋め込み式を解析します
-        '                Const in_expr = try Parser.directExecutes(allocator, store, &embedded.str.mid(2, embedded.str.len() - 3));
-        '                Const expr = store.get({}) Catch Return ParserError.OutOfMemoryExpression;
-        '                expr.*= .{ .UnfoldExpress = in_expr };
-        '                exprs.append(expr) catch return ParserError.OutOfMemoryExpression;
-        '                _ = iter.next();
-        '            },
-        '            .NoEscapeUnfold => {
-        '                // 非エスケープ展開埋め込み式を解析します
-        '                Const in_expr = try Parser.directExecutes(allocator, store, &embedded.str.mid(2, embedded.str.len() - 3));
-        '                Const expr = store.get({}) Catch Return ParserError.OutOfMemoryExpression;
-        '                expr.*= .{ .NoEscapeUnfoldExpress = in_expr };
-        '                exprs.append(expr) catch return ParserError.OutOfMemoryExpression;
-        '                _ = iter.next();
-        '            },
-        '            .Variables => {
-        '                // 変数埋め込み式を解析します
-        '                exprs.append(try parseVariablesBlock(allocator, store, embedded)) catch return ParserError.OutOfMemoryExpression;
-        '                _ = iter.next();
-        '            },
         '            .IfBlock => {
         '                // Ifブロックを解析、最後の埋め込み式が EndIf であることを確認します
         '                Const expr = try parseIfBlock(allocator, store, iter);
@@ -189,6 +165,150 @@ Namespace Analysis
         '    list_expr.*= .{ .ListExpress = .{ .exprs = list_exprs } };
         '    Return list_expr;
         '}
+
+        ''' <summary>
+        ''' 変数定義ブロックを解析します。
+        ''' 変数定義ブロックは、変数名とその値を定義するために使用されます。
+        ''' 変数名はU8String型で指定され、値はIExpression型で表されます。
+        ''' </summary>
+        ''' <param name="embeddedText">変数定義ブロック文字列。</param>
+        ''' <returns>変数定義式。</returns>
+        Private Function ParseVariableDefineBlock(embeddedText As U8String) As IExpression
+            ' 式バッファを生成
+            Dim exprs As New List(Of VariableDefineExpress)()
+
+            ' 入力文字列を単語に分割
+            Dim words = LexicalModule.SplitWords(embeddedText)
+
+            ' 変数式を解析します
+            Dim iter As New ParserIterator(Of LexicalModule.Word)(words)
+            While iter.HasNext()
+                exprs.Add(ParseVvariable(iter))
+                If iter.HasNext() Then
+                    If iter.Current.kind <> WordType.Semicolon Then
+                        Throw New AnalysisException("変数定義はセミコロンで区切られている必要があります")
+                    End If
+                    iter.Next() ' セミコロンをスキップ
+                End If
+            End While
+
+            ' 解析していない文が残っている場合はエラーを返します
+            If iter.HasNext() Then
+                Throw New AnalysisException("変数定義ブロックが正しく宣言されていません")
+            End If
+
+            ' 変数式をリストとして返します
+            Return New VariableDefineListExpress(exprs.ToArray())
+        End Function
+
+        ''' <summary>
+        ''' Ifステートメントを解析します。
+        ''' Ifステートメントは、条件に基づいて異なる処理を実行するために使用されます。
+        ''' このメソッドは、Ifブロック、ElseIfブロック、Elseブロック、およびEndIfブロックを解析します。
+        ''' </summary>
+        ''' <param name="iter">イテレータ。</param>
+        ''' <returns>Ifステートメント。</returns>
+        Private Function ParseIfStatement(iter As ParserIterator(Of LexicalEmbeddedModule.EmbeddedBlock)) As IExpression
+            ' 式バッファを生成します
+            Dim exprs As New List(Of IExpression)()
+
+            ' 最初の条件を取得
+            Dim prevBlock = iter.Next()
+            Dim prevType = EmbeddedType.IfBlock
+
+            Dim st = iter.CurrentIndex
+            Dim ed = iter.CurrentIndex
+            Dim lv = 0
+            Dim update = False
+            While iter.HasNext()
+                Dim stat = iter.Current
+                Select Case stat.kind
+                    Case EmbeddedType.IfBlock
+                        ' Ifブロックの開始
+                        lv += 1
+
+                    Case EmbeddedType.ElseIfBlock
+                        ' Else Ifブロックの開始
+                        If lv = 0 Then
+                            exprs.Add(ParseIfExpression(iter, prevBlock, prevType, st, ed))
+                            prevBlock = stat
+                            prevType = EmbeddedType.ElseIfBlock
+                            update = True
+                        End If
+
+                    Case EmbeddedType.ElseBlock
+                        ' Elseブロックの処理
+                        If lv = 0 Then
+                            exprs.Add(ParseIfExpression(iter, prevBlock, prevType, st, ed))
+                            prevBlock = stat
+                            prevType = EmbeddedType.ElseBlock
+                            update = True
+                        End If
+
+                    Case EmbeddedType.EndIfBlock
+                        ' Ifブロックの終了
+                        If lv > 0 Then
+                            lv -= 1
+                        Else
+                            exprs.Add(ParseIfExpression(iter, prevBlock, prevType, st, ed))
+                            Exit While ' ネストが終了でループも終了
+                        End If
+
+                    Case Else
+                        ' 他の埋め込みブロックは無視するか、エラーを投げることも可能ですが、ここでは無視します。
+                End Select
+                iter.Next()
+
+                If update Then
+                    st = iter.CurrentIndex
+                    update = False
+                End If
+                ed = iter.CurrentIndex
+            End While
+
+            ' Ifステートメントを解析します
+            Return New IfStatementExpress(exprs.ToArray())
+        End Function
+
+        ''' <summary>
+        ''' Ifブロックの式を解析します。
+        ''' このメソッドは、Ifブロック、ElseIfブロック、Elseブロックの条件式を解析し、対応する式を返します。
+        ''' </summary>
+        ''' <param name="iter">イテレーター。</param>
+        ''' <param name="prevBlock">前のIf式。</param>
+        ''' <param name="prevType">前のIf式の型。</param>
+        ''' <param name="st">開始位置。</param>
+        ''' <param name="ed">終了位置。</param>
+        ''' <returns>解析した式。</returns>
+        Private Function ParseIfExpression(
+            iter As ParserIterator(Of EmbeddedBlock),
+            prevBlock As EmbeddedBlock,
+            prevType As EmbeddedType,
+            st As Integer,
+            ed As Integer
+        ) As IExpression
+            ' ブロック内の要素のイテレータを作成します
+            Dim inIter = iter.GetRangeIterator(st, ed)
+
+            ' 条件式を解析します
+            Select Case prevType
+                Case EmbeddedType.IfBlock, EmbeddedType.ElseIfBlock
+                    ' IfブロックまたはElseIfブロックの条件式を解析
+                    Dim condition = ParserModule.DirectExecutes(prevBlock.str)
+                    ' Ifブロックの実行部を解析
+                    Dim innerExpr = ParseEmbeddedText(inIter)
+                    ' If条件式を作成
+                    Return New IfExpress(condition, innerExpr)
+
+                Case EmbeddedType.ElseBlock
+                    ' Elseブロックの実行部を作成
+                    Dim innerExpr = ParseEmbeddedText(inIter)
+                    Return New ElseExpress(innerExpr)
+
+                Case Else
+                    Throw New AnalysisException("条件式の解析に失敗しました。")
+            End Select
+        End Function
 
     End Module
 

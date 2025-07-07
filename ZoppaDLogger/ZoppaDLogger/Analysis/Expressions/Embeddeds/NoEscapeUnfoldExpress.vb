@@ -16,6 +16,9 @@ Namespace Analysis
         ''' <summary>コンストラクタ。</summary>
         ''' <param name="expr">埋込式。</param>
         Public Sub New(expr As IExpression)
+            If expr Is Nothing Then
+                Throw New ArgumentNullException(NameOf(expr))
+            End If
             _expr = expr
         End Sub
 
