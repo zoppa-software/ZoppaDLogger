@@ -11,7 +11,7 @@ Namespace Analysis
     ''' ()括弧式は、式の評価順序を制御するために使用されます。
     ''' 例: (x + y) * z
     ''' </remarks>
-    Structure ParenExpress
+    Structure ParenExpression
         Implements IExpression
 
         ''' <summary>対象となる式。</summary>
@@ -27,7 +27,7 @@ Namespace Analysis
         ''' <returns>()括弧式の種類。</returns> 
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.ParenExpress
+                Return ExpressionType.ParenExpression
             End Get
         End Property
 

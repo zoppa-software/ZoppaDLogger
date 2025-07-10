@@ -174,17 +174,17 @@ Namespace Analysis
                 Function(v) As IExpression
                     Select Case GetType(T)
                         Case GetType(Double)
-                            Return New NumberExpress(CDbl(CObj(v)))
+                            Return New NumberExpression(CDbl(CObj(v)))
                         Case GetType(Integer)
-                            Return New NumberExpress(CDbl(CInt(CObj(v))))
+                            Return New NumberExpression(CDbl(CInt(CObj(v))))
                         Case GetType(String)
-                            Return New StringExpress(U8String.NewString(CStr(CObj(v))))
+                            Return New StringExpression(U8String.NewString(CStr(CObj(v))))
                         Case GetType(U8String)
-                            Return New StringExpress(DirectCast(CObj(v), U8String))
+                            Return New StringExpression(DirectCast(CObj(v), U8String))
                         Case GetType(Boolean)
-                            Return New BooleanExpress(CBool(CObj(v)))
+                            Return New BooleanExpression(CBool(CObj(v)))
                         Case Else
-                            Return New ObjectExpress(CObj(v))
+                            Return New ObjectExpression(CObj(v))
                     End Select
                 End Function).ToArray()
             Me._hierarhy.Regist(key, New ArrayVariable(arr))

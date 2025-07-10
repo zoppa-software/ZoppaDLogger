@@ -10,97 +10,106 @@ Namespace Analysis
     Public Enum ExpressionType
 
         ''' <summary>空式。</summary>
-        EmptyExpress
+        EmptyExpression
 
         ''' <summary>リスト式。</summary>
-        ListExpress
+        ListExpression
 
         ''' <summary>非展開式式。</summary>
-        PlainTextExpress
+        PlainTextExpression
 
         ''' <summary>展開式式（エスケープ）</summary>
-        UnfoldExpress
+        UnfoldExpression
 
         ''' <summary>非展開式式（アンエスケープ）</summary>
-        NoEscapeUnfoldExpress
+        NoEscapeUnfoldExpression
 
         ''' <summary>変数式。</summary>
-        VariableExpress
+        VariableExpression
 
         ''' <summary>変数宣言式リスト。</summary>
-        VariablesDefineListExpress
+        VariablesDefineListExpression
 
         ''' <summary>変数宣言式。</summary>
-        VariableDefineExpress
+        VariableDefineExpression
 
         ''' <summary>ifブロック。</summary>
-        IfStatementExpress
+        IfStatementExpression
 
         ''' <summary>IF式。</summary>
-        IfExpress
+        IfExpression
 
         ''' <summary>IF Else式。</summary>
-        ElseExpress
+        ElseExpression
 
         ''' <summary>三項演算式。</summary>
-        TernaryExpress
+        TernaryExpression
 
         ''' <summary>括弧式。</summary>
-        ParenExpress
+        ParenExpression
 
         ''' <summary>二項演算式。</summary>
-        BinaryExpress
+        BinaryExpression
 
         ''' <summary>単項演算式（前置き）</summary>
-        UnaryExpress
+        UnaryExpression
 
         ''' <summary>数値式。</summary>
-        NumberExpress
+        NumberExpression
 
         ''' <summary>文字列式。</summary>
-        StringExpress
+        StringExpression
 
         ''' <summary>非エスケープ文字列式。</summary>
-        NoEscapeStringExpress
+        NoEscapeStringExpression
 
         ''' <summary>真偽値式。</summary>
-        BooleanExpress
+        BooleanExpression
 
         ''' <summary>配列フィールド式。</summary>
-        ArrayFieldExpress
+        ArrayFieldExpression
 
         ''' <summary>配列アクセス式。</summary>
-        ArrayAccessExpress
+        ArrayAccessExpression
 
         ''' <summary>識別子式。</summary>
-        IdentifierExpress
+        IdentifierExpression
 
         ''' <summary>For式。</summary>
-        ForExpress
+        ForExpression
 
         ''' <summary>Select式。</summary>
-        SelectExpress
+        SelectExpression
 
         ''' <summary>Selectトップ式。</summary>
-        SelectTopExpress
+        SelectTopExpression
 
         ''' <summary>Select Case式。</summary>
-        SelectCaseExpress
+        SelectCaseExpression
 
         ''' <summary>Select Default式。</summary>
-        SelectDefaultExpress
+        SelectDefaultExpression
 
         ''' <summary>関数引数式。</summary>
-        FunctionArgsExpress
+        FunctionArgsExpression
 
         ''' <summary>関数式。</summary>
-        FunctionCallExpress
+        FunctionCallExpression
 
         ''' <summary>オブジェクト式。</summary>
-        ObjectExpress
+        ObjectExpression
 
         ''' <summary>オブジェクトフィールドアクセス式。</summary>
-        FieldAccessExpress
+        FieldAccessExpression
+
+        ''' <summary>Null値式。</summary>
+        NullExpression
+
+        ''' <summary>時間式。</summary>
+        DateTimeExpression
+
+        ''' <summary>時間式。</summary>
+        TimeSpanExpression
 
     End Enum
 

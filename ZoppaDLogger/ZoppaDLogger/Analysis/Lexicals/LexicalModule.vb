@@ -37,6 +37,9 @@ Namespace Analysis
         ''' <summary>inキーワードを表す定数。</summary>
         Private ReadOnly InKeyword As U8String = U8String.NewString("in")
 
+        ''' <summary>nullキーワードを表す定数。</summary>
+        Private ReadOnly NullKeyword As U8String = U8String.NewString("null")
+
         ' 単語分割に使用する文字の配列を定義します。
         Private ReadOnly _splitChars As New Lazy(Of Boolean())(
             Function()
@@ -315,6 +318,8 @@ Namespace Analysis
                 Return New Word With {.str = keyword, .kind = WordType.XorOperator}
             ElseIf keyword = InKeyword Then ' in
                 Return New Word With {.str = keyword, .kind = WordType.InKeyword}
+            ElseIf keyword = NullKeyword Then
+                Return New Word With {.str = keyword, .kind = WordType.NullLiteral}
             Else
                 ' それ以外の文字列は識別子とみなす
                 Return New Word With {.str = keyword, .kind = WordType.Identifier}

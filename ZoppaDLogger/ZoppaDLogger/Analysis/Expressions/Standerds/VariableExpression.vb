@@ -12,7 +12,7 @@ Namespace Analysis
     ''' 変数式は、変数の値を取得するために使用されます。
     ''' 例: x, y, z
     ''' </remarks>
-    Structure VariableExpress
+    Structure VariableExpression
         Implements IExpression
 
         ' 値
@@ -28,7 +28,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.VariableExpress
+                Return ExpressionType.VariableExpression
             End Get
         End Property
 
@@ -40,6 +40,10 @@ Namespace Analysis
         ''' <returns>変数の値。</returns>
         Public Function GetValue(venv As AnalysisEnvironment) As IValue Implements IExpression.GetValue
             Dim v = venv.Get(_name)
+            If v Is Nothing Then
+                Throw New InvalidOperationException($"変数 '{_name}' は定義されていません。")
+            End If
+
             Select Case v.Type
                 Case VariableType.Expr
                     Return DirectCast(v, ExprVariable).Value.GetValue(venv)

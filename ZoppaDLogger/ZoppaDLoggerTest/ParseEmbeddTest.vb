@@ -58,6 +58,25 @@ Public Class ParseEmbeddTest
         Dim input1 = U8String.NewString("これは、{if false}真{else}偽{/if}です。")
         Dim result1 = ParserModule.Translate(input1)
         Assert.True(result1.Expression.GetValue(venv).Str.Equals("これは、偽です。"))
+
+        Dim input2 = U8String.NewString("これは、{if true}真{else if false}偽{/if}です。")
+        Dim result2 = ParserModule.Translate(input2)
+        Assert.True(result2.Expression.GetValue(venv).Str.Equals("これは、真です。"))
+
+        Dim input3 = U8String.NewString("これは、{if false}真{else if true}偽{else}他{/if}です。")
+        Dim result3 = ParserModule.Translate(input3)
+        Assert.True(result3.Expression.GetValue(venv).Str.Equals("これは、偽です。"))
+    End Sub
+
+    <Fact>
+    Public Sub ParseEmbeddTest_ForBlock()
+        Dim venv As New AnalysisEnvironment()
+        Dim input = U8String.NewString("これは、{for i in [1, 2, 3]}#{i}、{/for}です。")
+        Dim result = ParserModule.Translate(input)
+        Assert.True(result.Expression.GetValue(venv).Str.Equals("これは、1、2、3、です。"))
+        Dim input2 = U8String.NewString("これは、{for i in [1, 2, 3]}#{i * 10}、{/for}です。")
+        Dim result2 = ParserModule.Translate(input2)
+        Assert.True(result2.Expression.GetValue(venv).Str.Equals("これは、10、20、30、です。"))
     End Sub
 
 End Class

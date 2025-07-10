@@ -24,6 +24,9 @@ Namespace Analysis
         ''' <summary>カンマ。</summary>
         Comma
 
+        ''' <summary>日時リテラル。</summary>
+        DateTimeLiteral
+
         ''' <summary>スラッシュ。</summary>
         Divide
 
@@ -78,6 +81,9 @@ Namespace Analysis
         ''' <summary>等しくない。</summary>
         NotEqual
 
+        ''' <summary>ヌルリテラル。</summary>
+        NullLiteral
+
         ''' <summary>数値。</summary>
         ''' <remarks>
         ''' 数値リテラルを表します。整数や浮動小数点数など、数値として解釈される値を含みます。
@@ -113,6 +119,9 @@ Namespace Analysis
         ''' 文字列を表すリテラルで、通常は引用符で囲まれたテキストを含みます。
         ''' </summary>
         StringLiteral
+
+        ''' <summary>時間リテラル。</summary>
+        TimeSpanLiteral
 
         ''' <summary>真リテラル。</summary>
         TrueLiteral

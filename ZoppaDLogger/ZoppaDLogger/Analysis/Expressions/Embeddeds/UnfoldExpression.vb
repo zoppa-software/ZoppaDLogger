@@ -4,10 +4,10 @@ Option Explicit On
 Namespace Analysis
 
     ''' <summary>
-    ''' 非エスケープ埋込テキスト式を表す構造体です。
+    ''' 埋込テキスト式を表す構造体です。
     ''' この構造体は、埋込式を保持し、式の型を提供します。
     ''' </summary>
-    Structure NoEscapeUnfoldExpress
+    Structure UnfoldExpression
         Implements IExpression
 
         ' 埋込式
@@ -26,7 +26,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.NoEscapeUnfoldExpress
+                Return ExpressionType.UnfoldExpression
             End Get
         End Property
 
@@ -36,7 +36,6 @@ Namespace Analysis
         ''' </summary>
         ''' <param name="venv">変数環境。</param>
         ''' <returns>展開された埋込テキストの値。</returns>
-        ''' <exception cref="InvalidOperationException">不正な操作が行われた場合にスローされます。</exception>
         Public Function GetValue(venv As AnalysisEnvironment) As IValue Implements IExpression.GetValue
             Return _expr.GetValue(venv)
         End Function

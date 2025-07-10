@@ -61,31 +61,9 @@ Namespace Analysis
         Public Function ToArrayValue(Of T)(values As T()) As IValue
             Dim items = New IValue(values.Length - 1) {}
             For i As Integer = 0 To values.Length - 1
-                items(i) = ObjToValue(values(i))
+                items(i) = ConvertToValue(values(i))
             Next
             Return New ArrayValue(items)
-        End Function
-
-        ''' <summary>オブジェクトをIValueに変換します。</summary>
-        ''' <param name="v">変換するオブジェクト。</param>
-        ''' <returns>IValue型のObjectValue。</returns>
-        Private Function ObjToValue(v As Object) As IValue
-            Select Case v.GetType()
-                Case GetType(Double)
-                    Return New NumberValue(CDbl(v))
-                Case GetType(Integer)
-                    Return New NumberValue(CInt(v))
-                Case GetType(String)
-                    Return New StringValue(U8String.NewString(CStr(v)))
-                Case GetType(U8String)
-                    Return New StringValue(DirectCast(v, U8String))
-                Case GetType(Boolean)
-                    Return New BooleanValue(CBool(v))
-                Case GetType(IValue)
-                    Return DirectCast(v, IValue)
-                Case Else
-                    Return New ObjectValue(v)
-            End Select
         End Function
 
         ''' <summary>オブジェクトをIValueに変換します。</summary>
@@ -94,6 +72,22 @@ Namespace Analysis
         <Extension()>
         Public Function ToObjectValue(value As Object) As IValue
             Return New ObjectValue(value)
+        End Function
+
+        ''' <summary>日付時刻をIValueに変換します。</summary>
+        ''' <param name="value">変換する日付時刻。</param>
+        ''' <returns>IValue型のDateTimeValue。</returns>
+        <Extension()>
+        Public Function ToDateTimeValue(value As DateTime) As IValue
+            Return New DateTimeValue(value)
+        End Function
+
+        ''' <summary>時間をIValueに変換します。</summary>
+        ''' <param name="value">変換する時間。</param>
+        ''' <returns>IValue型のTimeSpanValue。</returns>
+        <Extension()>
+        Public Function ToTimeSpanValue(value As TimeSpan) As IValue
+            Return New TimeSpanValue(value)
         End Function
 
         ''' <summary>
@@ -109,6 +103,9 @@ Namespace Analysis
         ''' <param name="obj">オブジェクト。</param>
         ''' <returns>IValue。</returns>
         Public Function ConvertToValue(obj As Object) As IValue
+            If obj Is Nothing Then
+                Return NullValue.Value　' NullValueを返す
+            End If
             Select Case obj.GetType()
                 Case GetType(Boolean)
                     Return New BooleanValue(CBool(obj))
@@ -118,14 +115,20 @@ Namespace Analysis
                     Return New StringValue(U8String.NewString(CStr(obj)))
                 Case GetType(U8String)
                     Return New StringValue(DirectCast(obj, U8String))
+                Case GetType(IValue)
+                    Return DirectCast(obj, IValue)
                 Case GetType(IValue())
                     Return New ArrayValue(DirectCast(obj, IValue()))
+                Case GetType(DateTime)
+                    Return New DateTimeValue(DirectCast(obj, DateTime))
+                Case GetType(TimeSpan)
+                    Return New TimeSpanValue(DirectCast(obj, TimeSpan))
                 Case Else
                     If obj.GetType().IsArray Then
                         Dim arr = CType(obj, Array)
                         Dim items = New IValue(arr.Length - 1) {}
                         For i As Integer = 0 To arr.Length - 1
-                            items(i) = ObjToValue(arr.GetValue(i))
+                            items(i) = ConvertToValue(arr.GetValue(i))
                         Next
                         Return New ArrayValue(items)
                     Else
@@ -144,6 +147,8 @@ Namespace Analysis
         <Extension()>
         Public Function Number(val As IValue) As Double
             Select Case val.Type
+                Case ValueType.Null
+                    Return 0 ' Nullは0として扱う
                 Case ValueType.Number
                     Return DirectCast(val, NumberValue).Value
                 Case ValueType.Bool
@@ -175,6 +180,8 @@ Namespace Analysis
         <Extension()>
         Public Function Str(val As IValue) As U8String
             Select Case val.Type
+                Case ValueType.Null
+                    Return U8String.Empty ' Nullは空文字列として扱う
                 Case ValueType.Str
                     Return DirectCast(val, StringValue).Value
                 Case ValueType.Number
@@ -200,6 +207,10 @@ Namespace Analysis
                         res.AddRange(o(i).Str.GetByteEnumerable())
                     Next
                     Return U8String.NewStringChangeOwner(res.ToArray())
+                Case ValueType.DateTime
+                    Return U8String.NewString(DirectCast(val, DateTimeValue).Value.ToString("o")) ' ISO 8601形式
+                Case ValueType.TimeSpan
+                    Return U8String.NewString(DirectCast(val, TimeSpanValue).Value.ToString())
                 Case Else
                     Throw New InvalidOperationException("文字列に変換することができません")
             End Select
@@ -215,6 +226,8 @@ Namespace Analysis
         <Extension()>
         Public Function Bool(val As IValue) As Boolean
             Select Case val.Type
+                Case ValueType.Null
+                    Return False ' Nullは偽とみなす
                 Case ValueType.Bool
                     Return DirectCast(val, BooleanValue).Value
                 Case ValueType.Str
@@ -250,6 +263,8 @@ Namespace Analysis
         <Extension()>
         Public Function Array(val As IValue) As IValue()
             Select Case val.Type
+                Case ValueType.Null
+                    Return New IValue() {}
                 Case ValueType.Array
                     Return DirectCast(val, ArrayValue).Value
                 Case Else
@@ -266,6 +281,8 @@ Namespace Analysis
         <Extension()>
         Public Function Obj(val As IValue) As Object
             Select Case val.Type
+                Case ValueType.Null
+                    Return Nothing
                 Case ValueType.Array
                     Return DirectCast(val, ArrayValue).Value
                 Case ValueType.Bool
@@ -276,8 +293,56 @@ Namespace Analysis
                     Return DirectCast(val, StringValue).Value
                 Case ValueType.Obj
                     Return DirectCast(val, ObjectValue).Value
+                Case ValueType.DateTime
+                    Return DirectCast(val, DateTimeValue).Value
+                Case ValueType.TimeSpan
+                    Return DirectCast(val, TimeSpanValue).Value
                 Case Else
                     Throw New InvalidOperationException("オブジェクト値に変換することができません")
+            End Select
+        End Function
+
+        ''' <summary>
+        ''' IValueを日付時刻に変換します。
+        ''' IValueの型に応じて、適切な日付時刻を返します。
+        ''' </summary>
+        ''' <param name="val">変換するIValue。</param>
+        ''' <returns>日付時刻。</returns>
+        ''' <exception cref="InvalidOperationException">日付に変換できない場合にスローされます。</exception>
+        <Extension()>
+        Public Function ToDate(val As IValue) As DateTime
+            Select Case val.Type
+                Case ValueType.Null
+                    Return DateTime.MinValue ' Nullは最小値として扱う
+                Case ValueType.DateTime
+                    Return DirectCast(val, DateTimeValue).Value
+                Case ValueType.Str
+                    Dim strVal = DirectCast(val, StringValue).Value
+                    Return DateTime.Parse(strVal.ToString())
+                Case Else
+                    Throw New InvalidOperationException("日付に変換することができません")
+            End Select
+        End Function
+
+        ''' <summary>
+        ''' IValueを時間に変換します。
+        ''' IValueの型に応じて、適切な時間を返します。
+        ''' </summary>
+        ''' <param name="val">変換するIValue。</param>
+        ''' <returns>時間。</returns>
+        ''' <exception cref="InvalidOperationException">時間に変換できない場合にスローされます。</exception>
+        <Extension()>
+        Public Function ToTimeSpan(val As IValue) As TimeSpan
+            Select Case val.Type
+                Case ValueType.Null
+                    Return TimeSpan.Zero ' Nullはゼロとして扱う
+                Case ValueType.TimeSpan
+                    Return DirectCast(val, TimeSpanValue).Value
+                Case ValueType.Str
+                    Dim strVal = DirectCast(val, StringValue).Value
+                    Return TimeSpan.Parse(strVal.ToString())
+                Case Else
+                    Throw New InvalidOperationException("時間に変換することができません")
             End Select
         End Function
 

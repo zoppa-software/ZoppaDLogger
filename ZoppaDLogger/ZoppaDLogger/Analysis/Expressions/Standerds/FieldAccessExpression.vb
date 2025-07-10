@@ -13,28 +13,31 @@ Namespace Analysis
     ''' <remarks>
     ''' この式は、オブジェクトのプロパティにアクセスし、その値を取得します。
     ''' </remarks>
-    Structure FieldAccessExpress
+    Structure FieldAccessExpression
         Implements IExpression
 
         ' 変数
         Private ReadOnly _target As IExpression
 
         ' プロパティ名リスト
-        Private ReadOnly _propertyName As U8String
+        Private ReadOnly _propertyName As String
 
         ''' <summary>フィールドアクセス式のコンストラクタ。</summary>
         ''' <param name="target">アクセスするインスタンス。</param>
         ''' <param name="propertyName">プロパティ名リスト。</param>
         Public Sub New(target As IExpression, propertyName As U8String)
+            If target Is Nothing Then
+                Throw New ArgumentNullException(NameOf(target))
+            End If
             _target = target
-            _propertyName = propertyName
+            _propertyName = propertyName.ToString()
         End Sub
 
         ''' <summary>式の型を取得します。</summary>
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.FieldAccessExpress
+                Return ExpressionType.FieldAccessExpression
             End Get
         End Property
 
@@ -48,7 +51,7 @@ Namespace Analysis
             ' 変数を取得
             Dim obj = _target.GetValue(venv).Obj
             ' プロパティ名を使用してオブジェクトのプロパティにアクセス
-            Dim propInfo As PropertyInfo = obj.GetType().GetProperty(_propertyName.ToString())
+            Dim propInfo As PropertyInfo = obj.GetType().GetProperty(_propertyName)
             If propInfo Is Nothing Then
                 Throw New InvalidOperationException($"プロパティ '{_propertyName}' が見つかりません。")
             End If

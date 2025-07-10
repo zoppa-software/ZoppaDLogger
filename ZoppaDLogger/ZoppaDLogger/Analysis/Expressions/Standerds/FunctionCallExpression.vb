@@ -9,7 +9,7 @@ Namespace Analysis
     ''' 関数呼び出し式を表す構造体です。
     ''' この構造体は、関数名と引数リストを保持し、式の型を提供します。
     ''' </summary>
-    Structure FunctionCallExpress
+    Structure FunctionCallExpression
         Implements IExpression
 
         ' 関数名
@@ -26,14 +26,14 @@ Namespace Analysis
         ''' </remarks>
         Public Sub New(name As U8String, parameter() As IExpression)
             Me._name = name
-            Me._parameter = parameter
+            Me._parameter = If(parameter, New IExpression() {})
         End Sub
 
         ''' <summary>式の型を取得します。</summary>
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.FunctionCallExpress
+                Return ExpressionType.FunctionCallExpression
             End Get
         End Property
 

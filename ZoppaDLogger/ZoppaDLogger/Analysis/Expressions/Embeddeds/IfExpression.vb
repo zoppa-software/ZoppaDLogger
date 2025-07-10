@@ -10,7 +10,7 @@ Namespace Analysis
     ''' <remarks>
     ''' If式は、条件に基づいて異なる処理を実行するために使用されます。
     ''' </remarks>
-    Structure IfExpress
+    Structure IfExpression
         Implements IExpression
 
         ' Ifの条件
@@ -40,7 +40,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.IfExpress
+                Return ExpressionType.IfExpression
             End Get
         End Property
 

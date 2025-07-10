@@ -12,7 +12,7 @@ Namespace Analysis
     ''' <remarks>
     ''' この式は、変数名とインデックスを使用して配列の要素にアクセスします。
     ''' </remarks>
-    Structure ArrayAccessExpress
+    Structure ArrayAccessExpression
         Implements IExpression
 
         ' 変数
@@ -42,7 +42,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.ArrayAccessExpress
+                Return ExpressionType.ArrayAccessExpression
             End Get
         End Property
 

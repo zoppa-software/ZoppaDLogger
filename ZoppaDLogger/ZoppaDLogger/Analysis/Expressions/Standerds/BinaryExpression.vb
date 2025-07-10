@@ -11,7 +11,7 @@ Namespace Analysis
     ''' 二項演算子は、2つの式に対して適用される演算子です。
     ''' 例: x + y, x - y, x * y, x / y
     ''' </remarks>
-    Structure BinaryExpress
+    Structure BinaryExpression
         Implements IExpression
 
         ''' <summary>許容誤差。</summary>
@@ -31,6 +31,12 @@ Namespace Analysis
         ''' <param name="left">左辺の式。</param>
         ''' <param name="right">右辺の式。</param>
         Public Sub New(wordType As WordType, left As IExpression, right As IExpression)
+            If left Is Nothing Then
+                Throw New ArgumentNullException(NameOf(left))
+            End If
+            If right Is Nothing Then
+                Throw New ArgumentNullException(NameOf(right))
+            End If
             _left = left
             _right = right
             _wordType = wordType
@@ -40,7 +46,7 @@ Namespace Analysis
         ''' <returns>演算子の種類。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.BinaryExpress
+                Return ExpressionType.BinaryExpression
             End Get
         End Property
 
@@ -61,12 +67,22 @@ Namespace Analysis
                         Return New NumberValue(lv.Number + rv.Number)
                     ElseIf lv.Type = ValueType.Str OrElse rv.Type = ValueType.Str Then
                         Return New StringValue(lv.Str.Concat(rv.Str))
+                    ElseIf lv.Type = ValueType.DateTime AndAlso rv.Type = ValueType.TimeSpan Then
+                        Return New DateTimeValue(lv.ToDate.Add(rv.ToTimeSpan))
+                    ElseIf lv.Type = ValueType.TimeSpan AndAlso rv.Type = ValueType.DateTime Then
+                        Return New DateTimeValue(rv.ToDate.Add(lv.ToTimeSpan))
+                    ElseIf lv.Type = ValueType.TimeSpan AndAlso rv.Type = ValueType.TimeSpan Then
+                        Return New TimeSpanValue(lv.ToTimeSpan.Add(rv.ToTimeSpan))
                     Else
                         Throw New InvalidOperationException("加算は数値または文字列に対してのみ適用できます。")
                     End If
                 Case WordType.Minus
                     If lv.Type = ValueType.Number AndAlso rv.Type = ValueType.Number Then
                         Return New NumberValue(lv.Number - rv.Number)
+                    ElseIf lv.Type = ValueType.DateTime AndAlso rv.Type = ValueType.TimeSpan Then
+                        Return New DateTimeValue(lv.ToDate.Subtract(rv.ToTimeSpan))
+                    ElseIf lv.Type = ValueType.TimeSpan AndAlso rv.Type = ValueType.TimeSpan Then
+                        Return New TimeSpanValue(lv.ToTimeSpan.Subtract(rv.ToTimeSpan))
                     Else
                         Throw New InvalidOperationException("減算は数値に対してのみ適用できます。")
                     End If
@@ -103,10 +119,6 @@ Namespace Analysis
                     Return New BooleanValue(OrOperator(lv, rv))
                 Case WordType.XorOperator
                     Return New BooleanValue(XorOperator(lv, rv))
-                    'Case WordType.Equal, WordType.NotEqual, WordType.LessThan, WordType.GreaterThan,
-                    '     WordType.LessThanOrEqual, WordType.GreaterThanOrEqual
-                    '    If lv.Type <> rv.Type Then Throw New InvalidOperationException("比較演算子は同じ型の値に対してのみ使用できます。")
-                    '    Return New BooleanValue(CompareValues(lv, rv))
                 Case Else
                     Throw New NotSupportedException($"サポートされていない演算子: {_wordType}")
             End Select
@@ -119,12 +131,18 @@ Namespace Analysis
         ''' <exception cref="NotSupportedException">サポートされていない値の型が使用された場合にスローされます。</exception>
         Private Shared Function CompareValues(left As IValue, right As IValue) As Boolean
             Select Case left.Type
+                Case ValueType.Null
+                    Return right.Type = ValueType.Null
                 Case ValueType.Number
                     Return Math.Abs(left.Number - right.Number) < Epsilon
                 Case ValueType.Str
                     Return left.Str.Equals(right.Str)
                 Case ValueType.Bool
                     Return left.Bool = right.Bool
+                Case ValueType.DateTime
+                    Return left.ToDate = right.ToDate
+                Case ValueType.TimeSpan
+                    Return left.ToTimeSpan = right.ToTimeSpan
                 Case ValueType.Array
                     If left.Array.Length = right.Array.Length Then
                         For i As Integer = 0 To left.Array.Length - 1
@@ -145,7 +163,7 @@ Namespace Analysis
 
         ''' <summary>
         ''' 左辺の値が右辺の値より大きいかどうかを比較します。
-        ''' このメソッドは、数値または文字列に対してのみ適用できます。
+        ''' このメソッドは、数値、文字列、日付、時間に対してのみ適用できます。
         ''' </summary>
         ''' <param name="left">左辺の値。</param>
         ''' <param name="right">右辺の値。</param>
@@ -155,14 +173,18 @@ Namespace Analysis
                 Return left.Number > right.Number AndAlso Math.Abs(left.Number - right.Number) >= Epsilon
             ElseIf left.Type = ValueType.Str Then
                 Return left.Str.CompareTo(right.Str) > 0
+            ElseIf left.Type = ValueType.DateTime Then
+                Return left.ToDate.CompareTo(right.ToDate) > 0
+            ElseIf left.Type = ValueType.TimeSpan Then
+                Return left.ToTimeSpan.CompareTo(right.ToTimeSpan) > 0
             Else
-                Throw New InvalidOperationException("大なり演算子は数値または文字列に対してのみ適用できます。")
+                Throw New InvalidOperationException("大なり演算子は数値、文字列、日付、時間に対してのみ適用できます。")
             End If
         End Function
 
         ''' <summary>
         ''' 左辺の値が右辺の値以上かどうかを比較します。
-        ''' このメソッドは、数値または文字列に対してのみ適用できます。
+        ''' このメソッドは、数値、文字列、日付、時間に対してのみ適用できます。
         ''' </summary>
         ''' <param name="left">左辺の値。</param>
         ''' <param name="right">右辺の値。</param>
@@ -172,14 +194,18 @@ Namespace Analysis
                 Return left.Number > right.Number OrElse Math.Abs(left.Number - right.Number) < Epsilon
             ElseIf left.Type = ValueType.Str Then
                 Return left.Str.CompareTo(right.Str) >= 0
+            ElseIf left.Type = ValueType.DateTime Then
+                Return left.ToDate.CompareTo(right.ToDate) >= 0
+            ElseIf left.Type = ValueType.TimeSpan Then
+                Return left.ToTimeSpan.CompareTo(right.ToTimeSpan) >= 0
             Else
-                Throw New InvalidOperationException("以上演算子は数値または文字列に対してのみ適用できます。")
+                Throw New InvalidOperationException("以上演算子は数値、文字列、日付、時間に対してのみ適用できます。")
             End If
         End Function
 
         ''' <summary>
         ''' 左辺の値が右辺の値より小さいかどうかを比較します。
-        ''' このメソッドは、数値または文字列に対してのみ適用できます。
+        ''' このメソッドは、数値、文字列、日付、時間に対してのみ適用できます。
         ''' </summary>
         ''' <param name="left">左辺の値。</param>
         ''' <param name="right">右辺の値。</param>
@@ -189,14 +215,18 @@ Namespace Analysis
                 Return left.Number < right.Number AndAlso Math.Abs(left.Number - right.Number) >= Epsilon
             ElseIf left.Type = ValueType.Str Then
                 Return left.Str.CompareTo(right.Str) < 0
+            ElseIf left.Type = ValueType.DateTime Then
+                Return left.ToDate.CompareTo(right.ToDate) < 0
+            ElseIf left.Type = ValueType.TimeSpan Then
+                Return left.ToTimeSpan.CompareTo(right.ToTimeSpan) < 0
             Else
-                Throw New InvalidOperationException("小なり演算子は数値または文字列に対してのみ適用できます。")
+                Throw New InvalidOperationException("小なり演算子は数値、文字列、日付、時間に対してのみ適用できます。")
             End If
         End Function
 
         ''' <summary>
         ''' 左辺の値が右辺の値以下かどうかを比較します。
-        ''' このメソッドは、数値または文字列に対してのみ適用できます。
+        ''' このメソッドは、数値、文字列、日付、時間に対してのみ適用できます。
         ''' </summary>
         ''' <param name="left">左辺の値。</param>
         ''' <param name="right">右辺の値。</param>
@@ -206,8 +236,12 @@ Namespace Analysis
                 Return left.Number < right.Number OrElse Math.Abs(left.Number - right.Number) < Epsilon
             ElseIf left.Type = ValueType.Str Then
                 Return left.Str.CompareTo(right.Str) <= 0
+            ElseIf left.Type = ValueType.DateTime Then
+                Return left.ToDate.CompareTo(right.ToDate) <= 0
+            ElseIf left.Type = ValueType.TimeSpan Then
+                Return left.ToTimeSpan.CompareTo(right.ToTimeSpan) <= 0
             Else
-                Throw New InvalidOperationException("以上演算子は数値または文字列に対してのみ適用できます。")
+                Throw New InvalidOperationException("以上演算子は数値、文字列、日付、時間に対してのみ適用できます。")
             End If
         End Function
 
@@ -252,7 +286,7 @@ Namespace Analysis
             If left.Type = ValueType.Bool Then
                 Return left.Bool Xor right.Bool
             Else
-                Throw New InvalidOperationException("論理和演算子は真偽値に対してのみ適用できます。")
+                Throw New InvalidOperationException("排他的論理和演算子は真偽値に対してのみ適用できます。")
             End If
         End Function
 

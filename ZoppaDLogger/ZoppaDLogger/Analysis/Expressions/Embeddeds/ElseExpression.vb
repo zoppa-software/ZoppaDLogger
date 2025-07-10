@@ -10,7 +10,7 @@ Namespace Analysis
     ''' <remarks>
     ''' Else式は、条件が偽の場合に実行される処理を定義するために使用されます。
     ''' </remarks>
-    Structure ElseExpress
+    Structure ElseExpression
         Implements IExpression
 
         ' 内側の式
@@ -32,7 +32,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.ElseExpress
+                Return ExpressionType.ElseExpression
             End Get
         End Property
 

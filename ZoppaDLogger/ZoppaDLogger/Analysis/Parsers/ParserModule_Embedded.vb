@@ -17,7 +17,7 @@ Namespace Analysis
         ''' <remarks>
         ''' このメソッドは、埋め込みテキストを解析し、式を生成します。
         ''' </remarks>
-        Private Function ParseEmbeddedText(iter As ParserIterator(Of LexicalEmbeddedModule.EmbeddedBlock)) As IExpression
+        Private Function ParseEmbeddedText(iter As ParserIterator(Of EmbeddedBlock)) As IExpression
             ' 埋め込み式のリストを作成します
             Dim exprs As New List(Of IExpression)()
 
@@ -27,19 +27,19 @@ Namespace Analysis
                 Select Case embedded.kind
                     Case EmbeddedType.None
                         ' 埋込式以外
-                        exprs.Add(New PlainTextExpress(embedded.str))
+                        exprs.Add(New PlainTextExpression(embedded.str))
                         iter.Next()
 
                     Case EmbeddedType.Unfold
                         ' 展開埋込式
                         Dim inExpr = ParserModule.DirectExecutes(embedded.str.Mid(2, embedded.str.Length - 3))
-                        exprs.Add(New UnfoldExpress(inExpr))
+                        exprs.Add(New UnfoldExpression(inExpr))
                         iter.Next()
 
                     Case EmbeddedType.NoEscapeUnfold
                         ' 非エスケープ展開埋込式
                         Dim inExpr = ParserModule.DirectExecutes(embedded.str.Mid(2, embedded.str.Length - 3))
-                        exprs.Add(New NoEscapeUnfoldExpress(inExpr))
+                        exprs.Add(New NoEscapeUnfoldExpression(inExpr))
                         iter.Next()
 
                     Case EmbeddedType.VariableDefine
@@ -48,7 +48,7 @@ Namespace Analysis
                         iter.Next()
 
                     Case EmbeddedType.IfBlock
-                        ' Ifブロックを解析します
+                        ' Ifブロック
                         Dim expr = ParseIfStatement(iter)
                         If iter.HasNext() AndAlso iter.Current.kind = EmbeddedType.EndIfBlock Then
                             exprs.Add(expr)
@@ -61,15 +61,16 @@ Namespace Analysis
                         ' ElseIfブロック、Elseブロック、EndIfブロックはエラー
                         Throw New AnalysisException("Ifブロックが開始されていません。ElseIf、Else、EndIfはIfブロック内でのみ使用できます。")
 
-                        'Case LexicalEmbeddedModule.EmbeddedKind.ForBlock
-                        '    ' Forブロックを解析します
-                        '    Dim expr = ParseForBlock(iter)
-                        '    If iter.HasNext() AndAlso iter.Current.kind = LexicalEmbeddedModule.EmbeddedKind.EndForBlock Then
-                        '        exprs.Add(expr)
-                        '        iter.Next()
-                        '    Else
-                        '        Throw New AnalysisException("Forブロックが閉じられていません。")
-                        '    End If
+                    Case EmbeddedType.ForBlock
+                        ' Forブロック
+                        Dim expr = ParseForStatement(iter)
+                        If iter.HasNext() AndAlso iter.Current.kind = EmbeddedType.EndForBlock Then
+                            exprs.Add(expr)
+                            iter.Next()
+                        Else
+                            Throw New AnalysisException("Forブロックが閉じられていません。")
+                        End If
+
                         'Case LexicalEmbeddedModule.EmbeddedKind.SelectBlock
                         '    ' Selectブロックを解析します
                         '    Dim expr = ParseSelectBlock(iter)
@@ -82,12 +83,12 @@ Namespace Analysis
 
                     Case EmbeddedType.EmptyBlock
                         ' 空のブロック
-                        exprs.Add(New EmptyExpress())
+                        exprs.Add(New EmptyExpression())
                         iter.Next()
                 End Select
             End While
 
-            Return New ListExpress(exprs.ToArray())
+            Return New ListExpression(exprs.ToArray())
         End Function
 
         '        /// 埋め込み式の解析を行う関数
@@ -106,20 +107,6 @@ Namespace Analysis
         '        Const embedded = iter.peek().?;
 
         '        switch (embedded.kind) {
-        '            .IfBlock => {
-        '                // Ifブロックを解析、最後の埋め込み式が EndIf であることを確認します
-        '                Const expr = try parseIfBlock(allocator, store, iter);
-        '                If (iter.hasNext() And iter.peek().?.kind == .EndIfBlock) {
-        '                    exprs.append(expr) catch return ParserError.OutOfMemoryExpression;
-        '                    _ = iter.next();
-        '                } else {
-        '                    Return ParserError.IfBlockNotClosed;
-        '                }
-        '            },
-        '            .ElseIfBlock, .ElseBlock, .EndIfBlock >= {
-        '                // ElseIfブロックまたはElseブロック、EndIfを解析
-        '                Return ParserError.IfBlockNotStarted;
-        '            },
         '            .ForBlock => {
         '                // Forブロックを解析、最後の埋め込み式が EndFor であることを確認します
         '                Const expr = try parseForBlock(allocator, store, iter);
@@ -175,7 +162,7 @@ Namespace Analysis
         ''' <returns>変数定義式。</returns>
         Private Function ParseVariableDefineBlock(embeddedText As U8String) As IExpression
             ' 式バッファを生成
-            Dim exprs As New List(Of VariableDefineExpress)()
+            Dim exprs As New List(Of VariableDefineExpression)()
 
             ' 入力文字列を単語に分割
             Dim words = LexicalModule.SplitWords(embeddedText)
@@ -198,7 +185,7 @@ Namespace Analysis
             End If
 
             ' 変数式をリストとして返します
-            Return New VariableDefineListExpress(exprs.ToArray())
+            Return New VariableDefineListExpression(exprs.ToArray())
         End Function
 
         ''' <summary>
@@ -208,7 +195,7 @@ Namespace Analysis
         ''' </summary>
         ''' <param name="iter">イテレータ。</param>
         ''' <returns>Ifステートメント。</returns>
-        Private Function ParseIfStatement(iter As ParserIterator(Of LexicalEmbeddedModule.EmbeddedBlock)) As IExpression
+        Private Function ParseIfStatement(iter As ParserIterator(Of EmbeddedBlock)) As IExpression
             ' 式バッファを生成します
             Dim exprs As New List(Of IExpression)()
 
@@ -267,7 +254,7 @@ Namespace Analysis
             End While
 
             ' Ifステートメントを解析します
-            Return New IfStatementExpress(exprs.ToArray())
+            Return New IfStatementExpression(exprs.ToArray())
         End Function
 
         ''' <summary>
@@ -298,16 +285,76 @@ Namespace Analysis
                     ' Ifブロックの実行部を解析
                     Dim innerExpr = ParseEmbeddedText(inIter)
                     ' If条件式を作成
-                    Return New IfExpress(condition, innerExpr)
+                    Return New IfExpression(condition, innerExpr)
 
                 Case EmbeddedType.ElseBlock
                     ' Elseブロックの実行部を作成
                     Dim innerExpr = ParseEmbeddedText(inIter)
-                    Return New ElseExpress(innerExpr)
+                    Return New ElseExpression(innerExpr)
 
                 Case Else
                     Throw New AnalysisException("条件式の解析に失敗しました。")
             End Select
+        End Function
+
+        ''' <summary>
+        ''' Forステートメントを解析します。
+        ''' Forステートメントは、繰り返し処理を行うために使用されます。
+        ''' </summary>
+        ''' <param name="iter">イテレータ。</param>
+        ''' <returns>Forステートメント。</returns>
+        ''' <remarks>
+        ''' このメソッドは、Forブロックの開始から終了までの範囲を解析し、対応する式を返します。
+        ''' </remarks>
+        Private Function ParseForStatement(iter As ParserIterator(Of EmbeddedBlock)) As IExpression
+            ' forブロックの開始を取得
+            Dim forCondition = iter.Next()
+
+            ' forの繰り返し範囲を取得
+            Dim st = iter.CurrentIndex
+            Dim ed = iter.CurrentIndex
+            Dim lv = 0
+            Dim endFor = False
+            While iter.HasNext()
+                Select Case iter.Current.kind
+                    Case EmbeddedType.ForBlock
+                        ' Forが開始された場合、ネストレベルを増やす
+                        lv += 1
+
+                    Case EmbeddedType.EndForBlock
+                        ' Forが終了された場合、ネストレベルを減らす
+                        If lv > 0 Then
+                            lv -= 1
+                        Else
+                            endFor = True
+                            Exit While ' ネストが終了でループも終了
+                        End If
+
+                    Case Else
+                        ' 他の埋め込みブロックは無視するか、エラーを投げることも可能ですが、ここでは無視します。
+                End Select
+
+                iter.Next()
+                ed = iter.CurrentIndex
+            End While
+
+            If endFor Then
+                ' 入力文字列を単語に分割します
+                Dim words = LexicalModule.SplitWords(forCondition.str)
+
+                ' forの繰り返し条件を解析します
+                Dim iterWords = New ParserIterator(Of LexicalModule.Word)(words)
+                Dim forExpr = ParserModule.ParseForStatement(iterWords)
+
+                ' forの繰り返す範囲を式として解析します
+                Dim bodyIter = iter.GetRangeIterator(st, ed)
+                Dim bodyExpr = ParseEmbeddedText(bodyIter)
+
+                Return New ForExpression(forExpr.varName, forExpr.collectionExpr, bodyExpr)
+            Else
+                ' Forブロックが閉じられていない場合はエラーを返す
+                Throw New AnalysisException("Forブロックが閉じられていません。")
+            End If
         End Function
 
     End Module

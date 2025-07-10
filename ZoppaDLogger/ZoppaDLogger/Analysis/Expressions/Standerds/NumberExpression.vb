@@ -7,7 +7,7 @@ Namespace Analysis
     ''' 数値式を表す構造体です。
     ''' この構造体は、数値の値を保持し、式の型を提供します。
     ''' </summary>
-    Structure NumberExpress
+    Structure NumberExpression
         Implements IExpression
 
         ' 値
@@ -23,7 +23,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.NumberExpress
+                Return ExpressionType.NumberExpression
             End Get
         End Property
 

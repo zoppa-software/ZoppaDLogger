@@ -4,21 +4,17 @@ Option Explicit On
 Namespace Analysis
 
     ''' <summary>
-    ''' オブジェクト式を表す構造体です。
-    ''' この式は、任意のオブジェクトを値として持つことができます。
+    ''' 日付時刻式を表す構造体です。
+    ''' この構造体は、日付と時刻の値を保持し、式の型を提供します。
     ''' </summary>
-    ''' <remarks>
-    ''' この式は、特定の型に依存せず、任意のオブジェクトを扱うことができます。
-    ''' </remarks>
-    Structure ObjectExpress
+    Structure DateTimeExpression
         Implements IExpression
 
         ' 値
-        Private ReadOnly _value As Object
-
-        ''' <summary>真偽値式のコンストラクタ。</summary>
-        ''' <param name="value">真偽値の値。</param>
-        Public Sub New(value As Object)
+        Private ReadOnly _value As DateTime
+        ''' <summary>日付時刻式のコンストラクタ。</summary>
+        ''' <param name="value">日付時刻の値。</param>
+        Public Sub New(value As DateTime)
             _value = value
         End Sub
 
@@ -26,14 +22,15 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.ObjectExpress
+                Return ExpressionType.DateTimeExpression
             End Get
         End Property
 
         ''' <summary>式の値を取得します。</summary>
         ''' <param name="venv">変数環境。</param>
+        ''' <returns>日付時刻の値。</returns>
         Public Function GetValue(venv As AnalysisEnvironment) As IValue Implements IExpression.GetValue
-            Return New ObjectValue(Me._value)
+            Return New DateTimeValue(_value)
         End Function
 
     End Structure

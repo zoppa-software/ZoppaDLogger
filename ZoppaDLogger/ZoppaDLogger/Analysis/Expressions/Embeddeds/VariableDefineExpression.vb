@@ -13,7 +13,7 @@ Namespace Analysis
     ''' 変数定義式は、変数名とその値を定義するために使用されます。
     ''' 変数名はU8String型で指定され、値はIExpression型で表されます。
     ''' </remarks>
-    Structure VariableDefineExpress
+    Structure VariableDefineExpression
         Implements IExpression
 
         ' 変数名
@@ -38,7 +38,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.VariableDefineExpress
+                Return ExpressionType.VariableDefineExpression
             End Get
         End Property
 

@@ -11,8 +11,8 @@ Namespace Analysis
     ''' </summary>
     ''' <remarks>
     ''' 三項演算子は、条件が真の場合に真の値を、偽の場合に偽の値を返します。
-    ''' </summary>
-    Structure TernaryExpress
+    ''' </remarks>
+    Structure TernaryExpression
         Implements IExpression
 
         ' 条件式
@@ -41,7 +41,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.TernaryExpress
+                Return ExpressionType.TernaryExpression
             End Get
         End Property
 
@@ -50,7 +50,7 @@ Namespace Analysis
         Public Function GetValue(venv As AnalysisEnvironment) As IValue Implements IExpression.GetValue
             Dim con As IValue = _condition.GetValue(venv)
             If con.Type <> ValueType.Bool Then
-                Throw New InvalidOperationException("三項演算子の条件は真偽値でなければなりません。")
+                Throw New InvalidOperationException($"三項演算子の条件（{_condition}）は真偽値でなければなりません。型: {con.Type}")
             End If
             If con.Bool Then
                 Return _trueExpr.GetValue(venv)

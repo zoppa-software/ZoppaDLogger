@@ -11,14 +11,14 @@ Namespace Analysis
     ''' 空の式は、特定の状況で使用されることがありますが、
     ''' 通常は何も意味を持たないため、実際の値を返すことはありません。
     ''' </remarks>
-    Structure EmptyExpress
+    Structure EmptyExpression
         Implements IExpression
 
         ''' <summary>式の型を取得します。</summary>
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.EmptyExpress
+                Return ExpressionType.EmptyExpression
             End Get
         End Property
 

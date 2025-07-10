@@ -4,33 +4,28 @@ Option Explicit On
 Namespace Analysis
 
     ''' <summary>
-    ''' 真偽値式を表す構造体です。
-    ''' この構造体は、真偽値の値を保持し、式の型を提供します。
+    ''' Null式を表す構造体です。
+    ''' この構造体は、Null値を保持し、式の型を提供します。
+    ''' Null式は、値が存在しないことを示すために使用されます。
     ''' </summary>
-    Structure BooleanExpress
+    ''' <remarks>
+    ''' Null式は、値が存在しないことを明示的に示すために使用されます。
+    ''' </remarks>
+    Structure NullExpression
         Implements IExpression
-
-        ' 値
-        Private ReadOnly _value As Boolean
-
-        ''' <summary>真偽値式のコンストラクタ。</summary>
-        ''' <param name="value">真偽値の値。</param>
-        Public Sub New(value As Boolean)
-            _value = value
-        End Sub
 
         ''' <summary>式の型を取得します。</summary>
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.BooleanExpress
+                Return ExpressionType.NullExpression
             End Get
         End Property
 
         ''' <summary>式の値を取得します。</summary>
         ''' <param name="venv">変数環境。</param>
         Public Function GetValue(venv As AnalysisEnvironment) As IValue Implements IExpression.GetValue
-            Return New BooleanValue(_value)
+            Return NullValue.Value
         End Function
 
     End Structure

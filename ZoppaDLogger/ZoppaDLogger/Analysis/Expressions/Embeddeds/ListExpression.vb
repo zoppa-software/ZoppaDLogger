@@ -13,7 +13,7 @@ Namespace Analysis
     ''' リスト式は、複数の式をまとめて扱うために使用されます。
     ''' 各式は個別に評価され、その結果が式として返されます。
     ''' </remarks>
-    Structure ListExpress
+    Structure ListExpression
         Implements IExpression
 
         ' 各式のリスト
@@ -32,7 +32,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.ListExpress
+                Return ExpressionType.ListExpression
             End Get
         End Property
 

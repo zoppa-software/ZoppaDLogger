@@ -9,6 +9,9 @@ Namespace Analysis
     ''' </summary>
     Public Enum ValueType
 
+        ''' <summary>未定義値。</summary>
+        Null
+
         ''' <summary>数値。</summary>
         Number
 
@@ -20,6 +23,12 @@ Namespace Analysis
 
         ''' <summary>配列。</summary>
         Array
+
+        ''' <summary>日付。</summary>
+        DateTime
+
+        ''' <summary>時間。</summary>
+        TimeSpan
 
         ''' <summary>オブジェクト。</summary>
         Obj

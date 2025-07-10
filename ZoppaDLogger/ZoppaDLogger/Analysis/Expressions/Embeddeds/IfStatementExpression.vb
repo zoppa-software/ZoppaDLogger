@@ -12,7 +12,7 @@ Namespace Analysis
     ''' <remarks>
     ''' If式は、条件に基づいて異なる処理を実行するために使用されます。
     ''' </remarks>
-    Structure IfStatementExpress
+    Structure IfStatementExpression
         Implements IExpression
 
         ' If式のリスト
@@ -31,7 +31,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.IfStatementExpress
+                Return ExpressionType.IfStatementExpression
             End Get
         End Property
 

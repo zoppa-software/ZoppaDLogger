@@ -12,7 +12,7 @@ Namespace Analysis
     ''' <remarks>
     ''' この式は、埋め込まれていないテキストを表現し、式の型を提供します。
     ''' </remarks>
-    Structure PlainTextExpress
+    Structure PlainTextExpression
         Implements IExpression
 
         ' 非埋込テキスト
@@ -28,7 +28,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.PlainTextExpress
+                Return ExpressionType.PlainTextExpression
             End Get
         End Property
 

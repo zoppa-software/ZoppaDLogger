@@ -11,7 +11,7 @@ Namespace Analysis
     ''' 単項演算子は、1つの式に対して適用される演算子です。
     ''' 例: -x, +x, Not x
     ''' </remarks>
-    Structure UnaryExpress
+    Structure UnaryExpression
         Implements IExpression
 
         ''' <summary>単項演算子の種類。</summary>
@@ -33,7 +33,7 @@ Namespace Analysis
         ''' <returns>単項演算子の種類。</returns> 
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.UnaryExpress
+                Return ExpressionType.UnaryExpression
             End Get
         End Property
 

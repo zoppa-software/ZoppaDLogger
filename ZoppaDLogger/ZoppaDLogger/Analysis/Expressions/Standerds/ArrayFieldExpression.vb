@@ -11,7 +11,7 @@ Namespace Analysis
     ''' 配列フィールド式は、複数の式を配列として扱うために使用されます。
     ''' 例: [x, y, z]
     ''' </remarks>
-    Structure ArrayFieldExpress
+    Structure ArrayFieldExpression
         Implements IExpression
 
         ' 配列
@@ -33,7 +33,7 @@ Namespace Analysis
         ''' <returns>式の型。</returns>
         Public ReadOnly Property Type As ExpressionType Implements IExpression.Type
             Get
-                Return ExpressionType.ArrayFieldExpress
+                Return ExpressionType.ArrayFieldExpression
             End Get
         End Property
 

@@ -26,6 +26,41 @@ Namespace Analysis
     End Interface
 
     ''' <summary>
+    ''' 未定義値を表す構造体です。
+    ''' この構造体は、値が未定義であることを示し、IValueインターフェイスを実装します。
+    ''' </summary>
+    ''' <remarks>
+    ''' この構造体は、値が存在しないことを示すために使用されます。
+    ''' </remarks>
+    Structure NullValue
+        Implements IValue
+
+        ' NullValueのインスタンスをLazyに生成するためのフィールド
+        Private Shared ReadOnly Instanse As New Lazy(Of NullValue)(Function() New NullValue())
+
+        ''' <summary>
+        ''' 値を取得します。
+        ''' このプロパティは、NullValueのインスタンスを返します。
+        ''' NullValueは、値が未定義であることを示すために使用されます。
+        ''' </summary>
+        ''' <returns>Null値。</returns>
+        Public Shared ReadOnly Property Value As NullValue
+            Get
+                Return Instanse.Value
+            End Get
+        End Property
+
+        ''' <summary>値の型を取得します。</summary>
+        ''' <returns>値の型。</returns>
+        Public ReadOnly Property Type As ValueType Implements IValue.Type
+            Get
+                Return ValueType.Null
+            End Get
+        End Property
+
+    End Structure
+
+    ''' <summary>
     ''' 数値を表す構造体です。
     ''' この構造体は、数値の値を保持し、IValueインターフェイスを実装します。
     ''' 数値の型はValueType.Numberとして定義されます。
@@ -61,7 +96,7 @@ Namespace Analysis
         Implements IValue
 
         ' 空の文字列値を表すLazyなインスタンス
-        Private Shared ReadOnly EmptyValue As Lazy(Of StringValue) = New Lazy(Of StringValue)(Function() New StringValue(U8String.Empty))
+        Private Shared ReadOnly EmptyValue As New Lazy(Of StringValue)(Function() New StringValue(U8String.Empty))
 
         ' 文字列の値
         Public ReadOnly Value As U8String
@@ -172,6 +207,60 @@ Namespace Analysis
         Private ReadOnly Property Type As ValueType Implements IValue.Type
             Get
                 Return ValueType.Obj
+            End Get
+        End Property
+
+    End Structure
+
+    ''' <summary>
+    ''' 日付値を表す構造体です。
+    ''' この構造体は、日付の値を保持し、IValueインターフェイスを実装します。
+    ''' 日付の型はValueType.DateTimeとして定義されます。
+    ''' </summary>
+    Structure DateTimeValue
+        Implements IValue
+
+        ' 日付の値
+        Public ReadOnly Value As DateTime
+
+        ''' <summary>日付値のコンストラクタ。</summary>
+        ''' <param name="value">日付の値。</param>
+        Public Sub New(value As DateTime)
+            Me.Value = value
+        End Sub
+
+        ''' <summary>値の型を取得します。</summary>
+        ''' <returns>値の型。</returns>
+        Public ReadOnly Property Type As ValueType Implements IValue.Type
+            Get
+                Return ValueType.DateTime
+            End Get
+        End Property
+
+    End Structure
+
+    ''' <summary>
+    ''' 時間値を表す構造体です。
+    ''' この構造体は、時間の値を保持し、IValueインターフェイスを実装します。
+    ''' 時間の型はValueType.TimeSpanとして定義されます。
+    ''' </summary>
+    Structure TimeSpanValue
+        Implements IValue
+
+        ' 時間の値
+        Public ReadOnly Value As TimeSpan
+
+        ''' <summary>時間値のコンストラクタ。</summary>
+        ''' <param name="value">時間の値。</param>
+        Public Sub New(value As TimeSpan)
+            Me.Value = value
+        End Sub
+
+        ''' <summary>値の型を取得します。</summary>
+        ''' <returns>値の型。</returns>
+        Public ReadOnly Property Type As ValueType Implements IValue.Type
+            Get
+                Return ValueType.TimeSpan
             End Get
         End Property
 
